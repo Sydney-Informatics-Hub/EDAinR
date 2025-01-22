@@ -244,7 +244,7 @@ Tibbles have a refined print method that shows only the first 10 rows, and all t
 Is your dataset tidy or messy?
 
 ```
-
+print(survey_raw)
 ```
 
 *Hint*: Because the data is in tibble format, we can gain a lot of information by just viewing the data itself.
@@ -296,7 +296,7 @@ Clean the `data_raw` variable names with `clean_names()`, returning a `data_clea
 
 ```
 survey_cleaned <- survey_raw %>%
- 
+    clean_names()
 ```
 
 The above code takes the data frame `data_raw` and puts it into the `clean_names()` function. This does the same thing as `clean_names(data_raw)`:
@@ -314,6 +314,7 @@ This makes it possible to see every column in your data frame:
 
 ```
 survey_cleaned %>%
+    glimpse()
 ```
 
 The data we currently have contains 84 columns and that's a large amount of info. We can notice that:
