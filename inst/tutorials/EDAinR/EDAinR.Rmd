@@ -2,18 +2,12 @@
 title: "Exploratory Data Analysis in R"
 subtitle: "Tidy datasets are all alike, but every messy dataset is messy in its own way"
 author: "Sydney Informatics Hub"
-output:
-  learnr::tutorial:
-    progressive: true
-    allow_skip: false
-    theme: "readable"
-runtime: shiny_prerendered
+output: html_document
 description: >
   This tutorial provides a step-by-step guideline, a cheat sheet, that walks through the quality checks to be applied for a successfull Exploratory Data Analysis (EDA) in R.
 ---
 
 ```{r setup, include=FALSE}
-library(learnr)
 library(tidyverse)
 library(janitor)
 library(naniar)
@@ -207,7 +201,7 @@ In the early stages of EDA you are encouraged to explore every idea that comes t
 We can read .csv files into R using `read_csv()`. The first argument is the most important: the path to the file. You can think about the path as the address of the file: the file is called `survey_results_public.csv` and it is within the `stack-overflow-developer-survey-2023.zip` file.
 The `survey_results_public.csv` is already loaded within this tutorial as the `survey_raw` object using the code below:
 
-```{r read_csv, exercise=TRUE}
+```
 survey_zip_file <- "stack-overflow-developer-survey-2023.zip"
 
 survey_raw <- readr::read_csv(unz(survey_zip_file, 
@@ -249,8 +243,8 @@ Tibbles have a refined print method that shows only the first 10 rows, and all t
 
 Is your dataset tidy or messy?
 
-```{r tibble, exercise=TRUE}
-____
+```
+
 ```
 
 *Hint*: Because the data is in tibble format, we can gain a lot of information by just viewing the data itself.
@@ -300,14 +294,14 @@ Let's introduce a few major themes in this tidyverse. First, the pipe operator -
 
 Clean the `data_raw` variable names with `clean_names()`, returning a `data_clean` object:
 
-```{r clean, exercise=TRUE}
+```
 survey_cleaned <- survey_raw %>%
-  _____
+ 
 ```
 
 The above code takes the data frame `data_raw` and puts it into the `clean_names()` function. This does the same thing as `clean_names(data_raw)`:
 
-```{r clean-base, exercise=TRUE}
+```
 survey_cleaned <- clean_names(survey_raw)
 ```
 
@@ -318,16 +312,15 @@ This makes it possible to see every column in your data frame:
 
 ![](images/glimpse.png){width="70%"}
 
-```{r glimpse, exercise=TRUE}
+```
 survey_cleaned %>%
-  ____()
 ```
 
 The data we currently have contains 84 columns and that's a large amount of info. We can notice that:
 
 -   the first variable looks like a unique identifier. Each subject should have their own ID such that all data are properly attributed to that subject. Often, it can be helpful to have a way of recording the source of each row in our original dataset (in this case, our subject), so we can trace the data from this row as we work with the data. The `isid()` function returns a check TRUE/FALSE whether or not the variables together uniquely identify a row in the dataframe:
 
-```{r isid, exercise=TRUE}
+```
 ____(survey_cleaned, 
      vars = c("response_id"), 
      verbose = TRUE)
@@ -342,7 +335,7 @@ ____(survey_cleaned,
 
 The `count()` functions allows us to count the frequency of each level in the `coding_activities` variable. This variable represents whether respondents code as a hobby or only for work:
 
-```{r count, exercise=TRUE}
+```
 survey_cleaned %>%
   ____(coding_activities) %>%
   arrange(desc(n))
@@ -352,7 +345,7 @@ survey_cleaned %>%
 
 **Details on the questions asked in the survey are provided in the document *survey_result_schema.csv***. You can read this document in the same way you read in the stackoverflow survey dataset, with the `read_csv()` function:
 
-```{r schema, exercise=TRUE}
+```
 zip_file_schema <- "stack-overflow-developer-survey-2023.zip"
 survey_schema <- ____(unz(zip_file_schema, 
                          'survey_results_schema.csv')) %>%
@@ -363,7 +356,7 @@ survey_schema
 
 Now we can use the `rename()` function to better rename those variables that are not easily understandable. Whenever you are creating a name for something in R, **be clear and descriptive**.
 
-```{r rename, exercise=TRUE}
+```
 survey_cleaned %>%
   colnames()
 
@@ -386,7 +379,7 @@ survey_renamed %>%
 
 Let's count the frequency of each level in the `coding_as_hobby` variable:
 
-```{r count2, exercise=TRUE}
+```
 survey_renamed %>%
   ____(coding_as_hobby) %>%
    arrange(desc(n))
@@ -394,7 +387,7 @@ survey_renamed %>%
 
 There are lots of values and in this case it would be much easier to make this variable binary (`yes`- the respondent codes outside of work (as hobby); `no`- the respondent doesn't code outside of work). When we want to add and/or change variables we can use `mutate()` from the *dplyr* package. We grab `survey_renamed`, and create a variable called `coding_as_hobby_clean` using the `coding_as_hobby` variable and assign it back into `survey_hobby`. The benefit is in the readability of the code. We repeat things like the name of the data frame much less:
 
-```{r mutate, exercise=TRUE}
+```
 #map each value to either “yes” or “no”
 survey_hobby <- survey_renamed %>% 
   ____(coding_as_hobby_clean = case_when(
@@ -410,7 +403,7 @@ survey_hobby <- survey_renamed %>%
 
 How can you visualise how many respondents engage in coding as a hobby? Compare how the `coding_as_hobby` and `coding_as_hobby_clean` variables are visualised in a bar plot using the `geom_bar()` function from the *ggplot2* package:
 
-```{r bar_plot, exercise=TRUE}
+```
 # coding_as_hobby variable
 survey_hobby %>%
   ggplot() + 
@@ -434,7 +427,7 @@ The same idea applies to related data across different datasets.
 
 Looking at our dataset, you can notice that some respondents have provided conflicting information about their employment status (e.g. variable `employment` levels: `Employed, full-time;Not employed, but looking for work` or `Not employed, but looking for work;Not employed, and not looking for work`):
 
-```{r count3, exercise=TRUE}
+```
 survey_hobby %>%
   count(____) %>%
   arrange(desc(n))
@@ -442,7 +435,7 @@ survey_hobby %>%
 
 As it is not possible to reach out to the respondents who provided such responses, we might correct them, if it's clear what the correct response should be, or we may choose to remove these responses if they cannot be resolved. If you look at the `n` column, you can see that the number of respondents giving conflicting answers is less than 30. We can use the `mutate()` function to recode these respondent's answers to the `employment` variable as "unknown" (**flagging**).
 
-```{r employment, exercise=TRUE}
+```
 survey_employment <- survey_hobby %>% 
   ____(employment_clean = case_when(
     grepl("Employed", employment) & grepl("Not employed", employment) ~ "unknown",
@@ -454,7 +447,7 @@ We used `&` to say we want both conditions to be met.
 
 We can now map each value to either "employed", "self-employed", "student", "retired", "not_employed" or "unknown":
 
-```{r empl_clean, exercise=TRUE}
+```
 survey_empl_cleaned <- survey_employment %>% 
   mutate(employment_clean = case_when(
     grepl("Employed", employment_clean) ~ ____,
@@ -472,7 +465,7 @@ survey_empl_cleaned %>%
 
 You can visualise the covariation between the categorical variables `coding_as_hobby_clean` and `employment_clean` by counting the number of observations for each combination of levels of these variables. You can do this with the `geom_count()` function:
 
-```{r geom_count, exercise=TRUE}
+```
 survey_empl_cleaned %>%
   ggplot(aes(x=coding_as_hobby_clean, y=employment_clean)) + 
   ____ +
@@ -485,7 +478,7 @@ The size of each circle in the plot displays how many observations occurred at e
 
 Duplicates are data points that are repeated in your dataset. An example could be when two users have the same identity number. These values should be removed. You could check also look for fully identical rows in your dataset using the `group_by_all()` function:
 
-```{r duplicates, exercise=TRUE}
+```
 #test for fully identical rows
 survey_empl_cleaned %>%
   group_by_all() %>% #groups the data by all variables in the dataset
@@ -508,7 +501,7 @@ There are different ways we can quickly inspect our dataset. `skim()` is an alte
 
 ![](images/skim.png){width="80%"}
 
-```{r skim, exercise=TRUE}
+```
 survey_empl_cleaned %>%
   ____
 ```
@@ -517,7 +510,7 @@ The output from `skim()` separately summarizes categorical and continuous variab
 
 If we take a look closer we can see that `years_professional_coding` is a categorical variable. Let's have a closer look:
 
-```{r prof, exercise=TRUE}
+```
 #list all the possible levels
 survey_empl_cleaned %>%
   ____(years_professional_coding)
@@ -525,7 +518,7 @@ survey_empl_cleaned %>%
 
 It looks like two values are character strings instead of single numbers ("Less than 1 year", "More than 50 years"). Let's standardise these values so that the `years_professional_coding` variable transforms into a numerical variable:
 
-```{r prof_mutate, exercise=TRUE}
+```
 #convert characters to numbers and separately convert special values
 survey_prof <- survey_empl_cleaned %>%
   ____(years_professional_coding_clean = case_when(
@@ -542,13 +535,13 @@ survey_prof %>%
 
 `years_code` is reported as a categorical variables. Can you convert it to be numeric?
 
-```{r code, exercise=TRUE}
+```
 #list and inspect all the possible values
 survey_prof %>%
   ____(years_code)
 ```
 
-```{r code2, exercise=TRUE}
+```
 #convert characters to numbers and separately convert special values
 survey_code <- survey_prof %>%
  ____(years_code_clean = case_when(
@@ -571,7 +564,7 @@ You can create a factor from a character vector, and R will assume that the uniq
 
 If a categorical variable represents an ordinal scale (i.e., categories have a meaningful order), we should preserve this ordinality during data preprocessing. The variable `company_size` is a categorical ordinal variable:
 
-```{r tabyl, exercise=TRUE}
+```
 #list all the possible values for the variable company_size
 survey_code %>% 
   tabyl(____) %>%
@@ -582,7 +575,7 @@ survey_code %>%
 
 Let's convert `company_size` to a factor variable using the `factor()` function:
 
-```{r company, exercise=TRUE}
+```
 survey_company <- survey_code %>%
   mutate(company_size_clean = ____(company_size,
                                levels = c("Just me - I am a freelancer, sole proprietor, etc.",
@@ -619,14 +612,14 @@ If there were new missing values, then you would know there was a mistake in you
 
 `age` is reported here in age ranges and is a categorical variables that is ordinal. Can you convert it into a factor?
 
-```{r age, exercise=TRUE}
+```
 #list and inspect all the possible values for the variable age
 survey_company %>% 
   tabyl(____) %>%
   adorn_pct_formatting() 
 ```
 
-```{r age2, exercise=TRUE}
+```
 survey_age <- survey_company %>%
   mutate(age_clean = ____(age,
                                levels = c("Under 18 years old",
@@ -676,7 +669,7 @@ We often want to subset our data in some way before we do many of our analyses. 
 
 Let's focus our analysis only on developers. We might want to to exclude from our analysis students, hobby programmers and former developers (`profession` variable). We might also want to exclude unemployed and retired respondents (`employment_clean` variable). Let's have a look at these two variables:
 
-```{r count4, exercise=TRUE}
+```
 survey_age %>%
   count(____) %>%
   arrange(desc(n))
@@ -688,7 +681,7 @@ survey_age %>%
 
 We can filter using the `filter()` function (i.e. take out observations we don't want). By using `|` we are saying we want `employed` or `self_employed` respondents. In other words, if either are met, that observation will be kept:
 
-```{r filter, exercise=TRUE}
+```
 survey_filtered <- survey_age %>%
   ____(profession == 'I am a developer by profession') %>% #select only developers
   ____(employment_clean == 'employed' | employment_clean == 'self_employed') #select only employed responders 
@@ -700,7 +693,7 @@ We can also select only the variables that are of interest for us today. The `se
 
 We might want to drop the variables `q120` (You consent to providing your information to help us stay privacy compliant), `survey_ease` (How easy or difficult was this survey to complete?), `survey_lenght` (How do you feel about the length of the survey this year?), `t_branch` (Would you like to participate in the Professional Developer Series?).
 
-```{r select, exercise=TRUE}
+```
 survey_sel <- survey_filtered %>%
   ____(-all_of(c("q120", "survey_ease", "survey_length", "t_branch")))
 ```
@@ -719,7 +712,7 @@ Sometimes outliers are data entry errors, sometimes they are simply values at th
 
 Let's use the `geom_histogram()` function to create a histogram with salary on the x-axis:
 
-```{r hist, exercise=TRUE}
+```
 p <- survey_sel %>%
   filter(!is.na(salary_usd)) %>% #remove NAs, if we don't specify it, ggplot is going to automatically discards missing values and gives you a warning
   ggplot(aes(x = salary_usd)) + 
@@ -731,7 +724,7 @@ plotly::ggplotly(p) #make the plot interactive
 
 When you have a lot of data, outliers are sometimes difficult to see in a histogram. For example, take this distribution of the salary variable. The only evidence of outliers is the unusually wide limits on the x-axis. There are so many observations in the common bins that the rare bins are very short, making it very difficult to see them (although maybe if you stare intently at the right of the bar you'll spot something). To make it easy to see the unusual values, we need to zoom to small values of the y-axis with `coord_cartesian()`:
 
-```{r coord, exercise=TRUE}
+```
 p1 <- survey_sel %>%
   filter(!is.na(salary_usd)) %>%
   ggplot(aes(x = salary_usd)) + 
@@ -750,7 +743,7 @@ Let's have a better understanding on what's going on with these values. The conv
 
 But before doing this, let's check `country` variable:
 
-```{r country, exercise=TRUE}
+```
 survey_sel %>%
   count(____) %>%
   arrange(desc(n))
@@ -758,7 +751,7 @@ survey_sel %>%
 
 There are a lot of countries with very few respondents. In the next steps, we will rename some country names for visualisation purposes, we will calculate the number of respondents by country and the country median salary:
 
-```{r country_resp, exercise=TRUE}
+```
 # make country names shorter
 survey_country <- survey_sel %>%
   mutate(country = case_when(
@@ -784,7 +777,7 @@ country_n_resp %>%
 
 We can now use the `geom_boxplot()` function to generate a boxplot to visualise annual salary distribution by country. We will limit ourselves to countries with at least 30 respondents:
 
-```{r boxplot, exercise=TRUE}
+```
 options(scipen = 999) #remove scientific annotation 
 
 #add n of respondents and median salary information
@@ -808,7 +801,7 @@ The median annual salary varies a lot depending on the country. We might want to
 
 Let's plot the variables `remote_work` or `manager_role` and look at how these might contribute to salary distribution in the different countries. For easier visualisation, select only respondent from United States, Australia, Canada, Sweden, Italy and Singapore.
 
-```{r outliers_manager, exercise=TRUE}
+```
 #manager_role
 survey_resp %>% 
  ____(country == "United States" |
@@ -827,7 +820,7 @@ survey_resp %>%
 
 Individual contributors (in black) are employees who are not responsible for managing others. People managers (in red) are employees who manage teams or departments. People managers generally earn more than individual contributors, but there can be exceptions, especially in countries with high salary variability like the United States. The NA category is less clear due to the lack of specific role information.
 
-```{r outliers_remote, exercise=TRUE}
+```
 #remote_work
 survey_resp %>% 
  filter(____ == "United States" |
@@ -854,21 +847,21 @@ Missing values represent the unknown so they are "contagious": almost any operat
 
 Let's use the `head()` and `is.na()` functions to have a look at the first 20 values of the `salary_usd` variable:
 
-```{r head, exercise=TRUE}
+```
 head(survey_resp$salary_usd, n = 20)
 ____(is.na(survey_resp$salary_usd), n = 20)
 ```
 
 We can see that the missing value is recognized as `NA`. Sometimes you might see missing values recognised as `NaN`. "NaN" or "Not a Number" is used for numeric calculations. If a value is undefined, such as 0/0, "NaN" is the appropriate way to represent this. When we run the `is.na()` function, R recognizes both types of missing values and TRUE values are returned when we run it. We can use the `summarise()` function along with `is.na()` to count the missing values:
 
-```{r summarise, exercise=TRUE}
+```
 survey_resp %>% 
   ____(count=sum(is.na(salary_usd)))
 ```
 
 The `summarise()` functions allows us to do multiple things at once. Let's say we want to get a count of unique values, as well as missing values, and also the median value of `salary_usd` for each country:
 
-```{r summarise2, exercise=TRUE}
+```
 # counting unique, missing, and median values
 survey_resp %>% 
   group_by(____) %>% #group by country
@@ -887,14 +880,14 @@ If missing values in a column are infrequent and occur randomly, the most straig
 
 Let's use again the `summarise()` function to check whether there are any missing values for the `remote_work` variable:
 
-```{r remote_na, exercise=TRUE}
+```
 survey_resp %>% 
   ____(count=sum(is.na(remote_work)))
 ```
 
 There are 9 values missing. There are different ways we can inspect missing values in our dataset. `skim()` is good place to start. The `skim_df` object is pipeable and easy to use for additional manipulation: for example, you could select a specific summary statistic (e.g. `n_missing`) for a specific variable (e.g `remote_work`):
 
-```{r skim2, exercise=TRUE}
+```
 skim_df <- survey_resp %>% 
   ____
 
@@ -905,7 +898,7 @@ skim_df %>%
 
 A quick way to visualise missing values by column is by using the `gg_miss_var()` and `vis_miss` functions:
 
-```{r miss, exercise=TRUE}
+```
 #gg_miss_var plot
 survey_resp %>%
   select(remote_work, industry, years_work_exp, salary_usd, company_size_clean, dev_type, years_professional_coding_clean, age_clean, years_code_clean) %>%
@@ -921,7 +914,7 @@ Here, we see the variables listed along the top with percentages summarizing how
 
 While understanding how much data is missing in each column is important information, when trying to find patterns of missingness you need to examine the intersections of missingness. We can do this with the `gg_miss_upset()` function:
 
-```{r ggmiss, exercise=TRUE}
+```
 # specify the dataset we want to use, the number of sets (which variables) to include, and the number of interactions we want to examine.
 survey_resp %>%
   select(remote_work, industry, years_work_exp, salary_usd, company_size_clean,  years_professional_coding_clean,) %>%
@@ -933,7 +926,7 @@ Among the missing values, the type of industry, years of working experience and 
 
 Some respondents may genuinely not have information for certain fields. The co-missingness of certain variables may indicate underlying relationships or dependencies among them. For example, respondents who do not disclose their industry or company size may be freelancers. Some respondents may simply provide incomplete survey responses. For example, we have specifically selected only employed developers, so we would expect to have an annual salary for everyone. It this specific case, we might want to impute missing values for annual salary. The `remote_work` variables has a % of missingness that is \<0.1%. Given the sample size of our dataset, we might want to drop these values and we can do this with the `drop_na()` function:
 
-```{r drop, exercise=TRUE}
+```
 survey_remote <- survey_resp %>%
   ____(remote_work)
 ```
@@ -954,13 +947,13 @@ Being able to describe the shape of your variables is necessary during your desc
 
 When talking about the shape of one's data, we're discussing how the values (observations) within the variable are distributed. Often, we first determine how spread out the numbers are from one another (do all the observations fall between 1 and 10? 1 and 1000? -1000 and 10?). This is known as the **range** of the values. The range is described by the minimum and maximum values taken by observations in the variable and we can have a loot at the range of the `salary_usd` variable using the `range()` function:
 
-```{r range, exercise=TRUE}
+```
 ____(survey_remote$salary_usd, na.rm = TRUE)
 ```
 
 The distribution of the data can be visualised with the `geom_density()` function and it explains how the data are spread out over the range:
 
-```{r density, exercise=TRUE}
+```
 survey_remote %>%
   ggplot(aes(salary_usd)) +
   ____ +
@@ -973,7 +966,7 @@ Here we see that the data are skewed right, given the shift in values away from 
 
 Let's replace the missing values in the `salary_usd` variable with the median value of `salary_usd` for each country that we had previously calculated:
 
-```{r missing, exercise=TRUE}
+```
 survey_proc <- survey_remote %>%
   mutate(salary_usd = salary_usd %>%
            is.na %>%
@@ -987,7 +980,7 @@ survey_proc %>%
 
 We still have 14 missing values in the `salary_usd` variable. What are these?
 
-```{r missing2, exercise=TRUE}
+```
 survey_proc %>%
   dplyr::filter(is.na(salary_usd)) %>%
   dplyr::select(all_of(c("country", "salary_usd", "median_salary", "n_resp")))
@@ -1001,7 +994,7 @@ Sometimes missing values don't occur randomly. Let's consider the `years_profess
 
 To verify this, we could explore the relationship between `years_professional_coding_clean` and other variables such as `years_work_exp_clean`. If there's a pattern where younger respondents or those with fewer years of working experience tend to have missing values in `years_professional_coding_clean`, it suggests that the missingness is not random but related to certain characteristics of the respondents. We can use the `geom_miss_point()` function to plot missing values on a scatter plot:
 
-```{r scatter_miss, exercise=TRUE}
+```
 survey_proc %>%
 ggplot(aes(x = years_professional_coding_clean, y = years_work_exp)) +
   ____ +
@@ -1016,7 +1009,7 @@ From the plot, we can observe that:
 
 We can plot a scatter plot (without the missing values) with the `geom_point()` function. Here below is a plot of the relationship between the `years_professional_coding_clean` and `years_work_exp` variables, excluding the missing values. The `geom_smooth()` function aids the eye in seeing patterns:
 
-```{r point, exercise=TRUE}
+```
 survey_proc %>%
 ggplot(aes(x = years_professional_coding_clean, y = years_work_exp)) +
   ____ +
@@ -1030,7 +1023,7 @@ Each black dot represents an individual data point correlating years of professi
 
 We might want to look at the relationships between all of our continuous variables. A good way to do this is to use a visualization of **correlation**. Correlation is a measure of the relationship or interdependence of two variables. In other words, how much do the values of one variable change with the values of another. Correlation can be either positive or negative and it ranges from -1 to 1, with 1 and -1 indicating perfect correlation (1 being positive and -1 being negative) and 0 indicating no correlation. The `ggcorr()` functions plots a correlation matrix:
 
-```{r ggcorr, exercise=TRUE}
+```
 survey_proc %>%
 dplyr::select_if(is.numeric) %>%
     ____(method = "pairwise.complete.obs", #method for computing covariances in the presence of missing values
@@ -1084,13 +1077,13 @@ The **explore** package allows you to get faster insights with less code.
 
 The `explore()` function launches a shin app that you can use interactively to inspect individual variable, explore their relation to a target, grow a decision tree or create a fully automated report of all variables (altought this doesn't always work!).
 
-```{r explore, exercise=TRUE}
+```
 #explore(survey_proc)
 ```
 
 You can alternatively create a rich HTML report of all variables:
 
-```{r report, exercise=TRUE}
+```
 #survey_proc %>%
 #  report(output_dir = here("docs", "my_explore_report.Rmd"), 
 #         target = remote_work)
@@ -1098,7 +1091,7 @@ You can alternatively create a rich HTML report of all variables:
 
 Or you can explore single variables:
 
-```{r explore2, exercise=TRUE}
+```
 survey_proc %>% 
   explore(years_work_exp, 
           target = remote_work)
