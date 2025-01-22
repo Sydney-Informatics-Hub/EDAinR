@@ -4,3 +4,7 @@
 .Ruserdata
 .Rbuildignore
 .DS_Store
+
+*.html
+*.swp
+

@@ -21,20 +21,20 @@ library(GGally)
 theme_set(theme_minimal())
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
-destfile <- "stack-overflow-developer-survey-2023.zip"
+destfile <- "data/stack-overflow-developer-survey-2023.zip"
 if (!file.exists(destfile)){
 url <- 'https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip'
 download.file(url, destfile)
 }
 
-zip_file <- "stack-overflow-developer-survey-2023.zip"
+zip_file <- "data/stack-overflow-developer-survey-2023.zip"
 survey_raw <- readr::read_csv(unz(zip_file, 
                          'survey_results_public.csv'))
 
 survey_cleaned <- survey_raw %>%
   clean_names()
 
-zip_file_schema <- "stack-overflow-developer-survey-2023.zip"
+zip_file_schema <- "data/stack-overflow-developer-survey-2023.zip"
 survey_schema <- read_csv(unz(zip_file_schema, 
                          'survey_results_schema.csv')) %>%
   clean_names()
