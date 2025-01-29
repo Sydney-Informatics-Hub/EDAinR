@@ -8,3 +8,5 @@
 *.html
 *.swp
 
+# data files
+data/*
