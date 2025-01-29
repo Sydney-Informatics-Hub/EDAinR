@@ -2,16 +2,89 @@
 output: html_document
 ---
 
+# Exploratory Data Analysis in R
+
+## Import data
+
+```{r} 
+# import the file
+data = readr::read_csv('data/survey_results_public.csv')
+
+```
+
+## View data
+```{r}
+# inspect the file
+head(data)
+```
 
 ```{r}
+tail(data)
+```
+```{r}
+# columns
+colnames(data)
 
+```
+
+
+```{r}
+# rows
+
+row.names(data)
+
+```
+
+
+## Exercise
+- Read your data into R and view it
+
+## Select data
+### Using position
+
+```{r}
+# single row
+single_row <- data[3,]
+single_row
+```
+```{r}
+# single column
+single_col <- data[,3]
+single_col
 
 ```
 
 ```{r}
+# range
+many_rows <- data[3:6,]
+many_rows
 ```
 
 ```{r}
+many_cols <- data[,3:6]
+many_cols
 ```
 
+### Using labels
+
+```{r}
+remote_work_col <- data[, 'RemoteWork']
+remote_work_col
+```
+
+### using condition
+
+```{r}
+remote_pos_response <- subset(data, RemoteWork == 'Remote')
+remote_pos_response
+```
+
+
+## Plotting Data
+
+```{r}
+library(ggplot2)
+ggplot(data=data, aes(x=WorkExp)) +
+         geom_histogram()
+```
 
