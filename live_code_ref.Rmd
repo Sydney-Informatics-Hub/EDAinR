@@ -88,3 +88,103 @@ ggplot(data=data, aes(x=WorkExp)) +
          geom_histogram()
 ```
 
+## Exercise
+- Plot your own data
+- choose single column to plot
+
+
+## Lunch Break
+
+## Reformat data
+
+Common problems
+- variable across multiple columns 
+- observation across multiple rows
+
+```{r}
+library(tidyverse)
+pivot_longer(data, c('CompTotal', 'ConvertedCompYearly'), names_to = 'money', values_to = 'dollah')
+```
+
+
+```{r}
+pivot_wider(data, names_from = Age, values_from = WorkExp)
+```
+
+## Exercise
+- convert your own data into tidy format
+
+
+## Clean data
+
+### Missing Data
+```{r}
+# check for nulls
+is.na(data)
+```
+
+```{r}
+sum(is.na(data))
+```
+
+```{r}
+summarise_all(data, ~ sum(is.na(.)))
+```
+
+```{r}
+which(data == 999, arr.ind = TRUE)
+```
+
+
+
+```{r}
+unique(single_col)
+```
+
+### What to do about them?
+- Ignore
+- remove 
+- replace
+
+```{r}
+# remove
+data_dropna <- drop_na(data)
+data_dropna
+```
+
+```{r}
+# fill, but what does it do?
+fill(data)
+```
+
+
+```{r}
+which(data == 0, arr.ind = TRUE)
+```
+
+
+## Duplicates
+
+```{r}
+# check values in column, should match length if all unique
+number_of_ages <- nrow(unique(data[, 'Age']))
+number_of_ages
+```
+
+```{r}
+nrow(data)
+```
+
+
+```{r}
+# drop duplicates if exact
+distinct(data)
+```
+
+
+## Data Types
+
+```{r}
+sapply(data, class)
+```
+
