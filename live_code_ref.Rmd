@@ -9,10 +9,10 @@ output: html_document
 ```{r} 
 # import the file
 data = readr::read_csv('data/survey_results_public.csv')
-
 ```
 
 ## View data
+
 ```{r}
 # inspect the file
 head(data)
@@ -21,20 +21,16 @@ head(data)
 ```{r}
 tail(data)
 ```
+
 ```{r}
 # columns
 colnames(data)
-
 ```
-
 
 ```{r}
 # rows
-
 row.names(data)
-
 ```
-
 
 ## Exercise
 - Read your data into R and view it
@@ -47,11 +43,11 @@ row.names(data)
 single_row <- data[3,]
 single_row
 ```
+
 ```{r}
 # single column
 single_col <- data[,3]
 single_col
-
 ```
 
 ```{r}
@@ -79,7 +75,6 @@ remote_pos_response <- subset(data, RemoteWork == 'Remote')
 remote_pos_response
 ```
 
-
 ## Plotting Data
 
 ```{r}
@@ -91,7 +86,6 @@ ggplot(data=data, aes(x=WorkExp)) +
 ## Exercise
 - Plot your own data
 - choose single column to plot
-
 
 ## Lunch Break
 
@@ -106,14 +100,12 @@ library(tidyverse)
 pivot_longer(data, c('CompTotal', 'ConvertedCompYearly'), names_to = 'money', values_to = 'dollah')
 ```
 
-
 ```{r}
 pivot_wider(data, names_from = Age, values_from = WorkExp)
 ```
 
 ## Exercise
 - convert your own data into tidy format
-
 
 ## Clean data
 
@@ -135,8 +127,6 @@ summarise_all(data, ~ sum(is.na(.)))
 which(data == 999, arr.ind = TRUE)
 ```
 
-
-
 ```{r}
 unique(single_col)
 ```
@@ -157,11 +147,9 @@ data_dropna
 fill(data)
 ```
 
-
 ```{r}
 which(data == 0, arr.ind = TRUE)
 ```
-
 
 ## Duplicates
 
@@ -175,16 +163,13 @@ number_of_ages
 nrow(data)
 ```
 
-
 ```{r}
 # drop duplicates if exact
 distinct(data)
 ```
-
 
 ## Data Types
 
 ```{r}
 sapply(data, class)
 ```
-

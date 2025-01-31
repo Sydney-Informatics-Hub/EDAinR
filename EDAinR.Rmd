@@ -9,6 +9,9 @@ description: >
 ---
 
 ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+
+#load libraries
 library(tidyverse)
 library(janitor)
 library(naniar)
@@ -19,26 +22,28 @@ library(eeptools)
 library(rio)
 library(usydColours)
 library(GGally)
-theme_set(theme_minimal())
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
+#set global theme for plots
+theme_set(theme_minimal())
+
+#read in data
 destfile <- "data/stack-overflow-developer-survey-2023.zip"
 if (!file.exists(destfile)){
 url <- 'https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip'
 download.file(url, destfile)
 }
 
+#load in survey raw
 zip_file <- "data/stack-overflow-developer-survey-2023.zip"
-survey_raw <- readr::read_csv(unz(zip_file, 
-                         'survey_results_public.csv'))
+survey_raw <- readr::read_csv(unz(zip_file, 'survey_results_public.csv'))
 
 survey_cleaned <- survey_raw %>%
-  clean_names()
+  janitor::clean_names()
 
+#load in survey schema
 zip_file_schema <- "data/stack-overflow-developer-survey-2023.zip"
-survey_schema <- read_csv(unz(zip_file_schema, 
-                         'survey_results_schema.csv')) %>%
-  clean_names()
+survey_schema <- read_csv(unz(zip_file_schema, 'survey_results_schema.csv')) %>%
+  janitor::clean_names()
 
 lookup <- c(salary_usd = "converted_comp_yearly", 
             profession = "main_branch",
@@ -52,104 +57,93 @@ survey_renamed <- survey_cleaned %>%
   rename(all_of(lookup))
 
 survey_hobby <- survey_renamed %>% 
-  mutate(coding_as_hobby_clean = case_when(
-    grepl("I don’t code outside of work", coding_as_hobby) ~ "no",
-    grepl("Bootstrapping a business", coding_as_hobby) ~ "no",
-    grepl("Freelance/contract work", coding_as_hobby) ~ "no",
-    TRUE ~ "yes"))
+  mutate(coding_as_hobby_clean = case_when(grepl("I don’t code outside of work", coding_as_hobby) ~ "no",
+                                           grepl("Bootstrapping a business", coding_as_hobby) ~ "no",
+                                           grepl("Freelance/contract work", coding_as_hobby) ~ "no",
+                                           TRUE ~ "yes"))
 
 survey_employment <- survey_hobby %>% 
-  mutate(employment_clean = case_when(
-    grepl("Employed", employment) & grepl("Not employed", employment) ~ "unknown",
-    grepl("but", employment) & grepl("and", employment) ~ "unknown",
-    TRUE ~ employment))
+  mutate(employment_clean = case_when(grepl("Employed", employment) & grepl("Not employed", employment) ~ "unknown",
+                                      grepl("but", employment) & grepl("and", employment) ~ "unknown",
+                                      TRUE ~ employment))
 
 survey_empl_cleaned <- survey_employment %>% 
-  mutate(employment_clean = case_when(
-    grepl("Employed", employment_clean) ~ "employed",
-    grepl("freelancer", employment_clean) ~ "self_employed",
-    grepl("Student", employment_clean) ~ "student",
-    grepl("Retired", employment_clean) ~ "retired",
-    grepl("Not employed", employment_clean) ~ "not_employed",
-    grepl("I prefer not to say", employment_clean) ~ "unknown",
-    TRUE ~ employment_clean))
+  mutate(employment_clean = case_when(grepl("Employed", employment_clean) ~ "employed",
+                                      grepl("freelancer", employment_clean) ~ "self_employed",
+                                      grepl("Student", employment_clean) ~ "student",
+                                      grepl("Retired", employment_clean) ~ "retired",
+                                      grepl("Not employed", employment_clean) ~ "not_employed",
+                                      grepl("I prefer not to say", employment_clean) ~ "unknown",
+                                      TRUE ~ employment_clean))
 
 survey_prof <- survey_empl_cleaned %>%
-  mutate(years_professional_coding_clean = case_when(
-      years_professional_coding == "Less than 1 year" ~ 0,
-      years_professional_coding == "More than 50 years" ~ 51,
-      TRUE ~ as.numeric(years_professional_coding)))
+  mutate(years_professional_coding_clean = case_when(years_professional_coding == "Less than 1 year" ~ 0,
+                                                     years_professional_coding == "More than 50 years" ~ 51,
+                                                     TRUE ~ as.numeric(years_professional_coding)))
 
 survey_code <- survey_prof %>%
-  mutate(years_code_clean = case_when(
-      years_code == "Less than 1 year" ~ 0,
-      years_code == "More than 50 years" ~ 51,
-      TRUE ~ as.numeric(years_code)))
+  mutate(years_code_clean = case_when(years_code == "Less than 1 year" ~ 0,
+                                      years_code == "More than 50 years" ~ 51,
+                                      TRUE ~ as.numeric(years_code)))
 
 survey_company <- survey_code %>%
-  mutate(company_size_clean = factor(company_size,
-                               levels = c("Just me - I am a freelancer, sole proprietor, etc.)",
-                                          "2 to 9 employees",
-                                          "10 to 19 employees",
-                                          "20 to 99 employees",
-                                          "100 to 499 employees",
-                                          "500 to 999 employees",
-                                          "1,000 to 4,999 employees",
-                                          "5,000 to 9,999 employees",
-                                          "10,000 or more employees",
-                                          "I don’t know"),
-                                          labels = c("1",
-                                          "2-9",
-                                          "10-19",
-                                          "20-99",
-                                          "100-499",
-                                          "500-999",
-                                          "1,000-4,999",
-                                          "5,000-9,999",
-                                          ">10,000",
-                                          "unknown")))
+  mutate(company_size_clean = factor(company_size, levels = c("Just me - I am a freelancer, sole proprietor, etc.)",
+                                                              "2 to 9 employees",
+                                                              "10 to 19 employees",
+                                                              "20 to 99 employees",
+                                                              "100 to 499 employees",
+                                                              "500 to 999 employees",
+                                                              "1,000 to 4,999 employees",
+                                                              "5,000 to 9,999 employees",
+                                                              "10,000 or more employees",
+                                                              "I don’t know"),
+                                     labels = c("1", 
+                                                "2-9", 
+                                                "10-19", 
+                                                "20-99", 
+                                                "100-499", 
+                                                "500-999", 
+                                                "1,000-4,999",
+                                                "5,000-9,999",
+                                                ">10,000",
+                                                "unknown")))
 
 survey_age <- survey_company %>%
-  mutate(age_clean = factor(age,
-                               levels = c("Under 18 years old",
-                                          "18-24 years old",
-                                          "25-34 years old",
-                                          "35-44 years old",
-                                          "45-54 years old",
-                                          "55-64 years old",
-                                          "65 years or older",
-                                          "Prefer not to say"),
-                                          labels = c("<18",
-                                                     "18-24",
-                                                     "25-34",
-                                                     "35-44",
-                                                     "45-54",
-                                                     "55-64",
-                                                     ">65",
-                                                     "unknown")))
+  mutate(age_clean = factor(age, levels = c("Under 18 years old", 
+                                            "18-24 years old",
+                                            "25-34 years old",
+                                            "35-44 years old",
+                                            "45-54 years old",
+                                            "55-64 years old",
+                                            "65 years or older",
+                                            "Prefer not to say"),
+                            labels = c("<18", 
+                                       "18-24", 
+                                       "25-34", 
+                                       "35-44", 
+                                       "45-54", 
+                                       "55-64", 
+                                       ">65", 
+                                       "unknown")))
 
 survey_filtered <- survey_age %>%
   filter(profession == 'I am a developer by profession') %>% 
   filter(employment_clean == 'employed' | employment_clean == 'self_employed')
 
 survey_sel <- survey_filtered %>%
-  select(-all_of(c("q120", "survey_ease", "survey_length", "t_branch")))
+  dplyr::select(-all_of(c("q120", "survey_ease", "survey_length", "t_branch")))
 
 survey_country <- survey_sel %>%
-  mutate(country = case_when(
-    country == 'United Kingdom of Great Britain and Northern Ireland' ~ 'United Kingdom',
-    country == 'Venezuela, Bolivarian Republic of...' ~ 'Venezuela',
-    country == 'Iran, Islamic Republic of...' ~ 'Iran',
-    country == 'United States of America' ~ 'United States',
-    country == 'Congo, Republic of the...' ~ 'Democratic Republic of the Congo', 
-    .default = country
-    ))
+  mutate(country = case_when(country == 'United Kingdom of Great Britain and Northern Ireland' ~ 'United Kingdom',
+                             country == 'Venezuela, Bolivarian Republic of...' ~ 'Venezuela',
+                             country == 'Iran, Islamic Republic of...' ~ 'Iran',
+                             country == 'United States of America' ~ 'United States',
+                             country == 'Congo, Republic of the...' ~ 'Democratic Republic of the Congo', 
+                             .default = country))
 
-country_n_resp <- 
-  survey_country %>% 
+country_n_resp <- survey_country %>% 
   group_by(country) %>% 
-  summarise(median_salary = round(median(salary_usd, na.rm = TRUE)), 
-            n_resp = n()) %>%
+  summarise(median_salary = round(median(salary_usd, na.rm = TRUE)), n_resp = n()) %>%
   arrange(desc(n_resp))
 
 survey_resp <- survey_country %>%
@@ -159,9 +153,7 @@ survey_remote <- survey_resp %>%
   drop_na(remote_work)
 
 survey_proc <- survey_remote %>%
-  mutate(salary_usd = salary_usd %>%
-           is.na %>%
-           ifelse(median_salary, salary_usd))
+  mutate(salary_usd = salary_usd %>% is.na %>% ifelse(median_salary, salary_usd))
 ```
 
 ## Welcome!
