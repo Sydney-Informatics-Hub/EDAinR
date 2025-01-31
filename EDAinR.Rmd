@@ -27,30 +27,21 @@ library(usydColours)
 # Set global theme for plots
 theme_set(theme_minimal())
 
-# Define paths using here
-data_dir <- here::here("data")
-destfile <- here::here(data_dir, "stack-overflow-developer-survey-2023.zip")
+destfile <- "data/stack-overflow-developer-survey-2023.zip"
 
-# Download file if it doesn't exist
-if (!file.exists(destfile)) {
-  url <- "https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip"
-  download.file(url, destfile, mode = "wb") #mode wb ensures also downloaded correctly on windows
+if (!file.exists(destfile)){
+url <- 'https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip'
+download.file(url, destfile)
 }
 
-# Read and clean both survey data and schema in one go
-survey_data <- list(survey = "survey_results_public.csv",
-                    schema = "survey_results_schema.csv") %>%
-  map(~read_csv(unz(destfile, .x)) %>% 
-  janitor::clean_names())
+zip_file <- "data/stack-overflow-developer-survey-2023.zip"
+survey_raw <- readr::read_csv(unz(zip_file, 'survey_results_public.csv'))
+survey_cleaned <- survey_raw %>% janitor::clean_names()
 
-# Assign to individual objects
-survey_cleaned <- survey_data$survey #89184 obs. of 84 variables
-survey_schema <- survey_data$schema #78 obs. of 6 variables
+zip_file_schema <- "data/stack-overflow-developer-survey-2023.zip"
+survey_schema <- read_csv(unz(zip_file_schema, 'survey_results_schema.csv')) %>% janitor::clean_names()
 
-
-
-
-lookup <- c(salary_usd = "converted_comp_yearly", 
+lookup <- c(salary_usd = "converted_comp_yearly",
             profession = "main_branch",
             coding_as_hobby = "coding_activities",
             years_professional_coding = "years_code_pro",
@@ -59,6 +50,37 @@ lookup <- c(salary_usd = "converted_comp_yearly",
             manager_role = "i_cor_pm")
 
 survey_renamed <- survey_cleaned %>% rename(all_of(lookup))
+
+# # Define paths using here
+# data_dir <- here::here("data")
+# destfile <- here::here(data_dir, "stack-overflow-developer-survey-2023.zip")
+# 
+# # Download file if it doesn't exist
+# if (!file.exists(destfile)) {
+#   url <- "https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip"
+#   download.file(url, destfile, mode = "wb") #mode=wb ensures binary files are also downloaded correctly on windows
+# }
+# 
+# # Read and clean both survey data and schema in one go
+# survey_data <- list(survey = "survey_results_public.csv",
+#                     schema = "survey_results_schema.csv") %>%
+#   map(~read_csv(unz(destfile, .x)) %>% 
+#   janitor::clean_names())
+# 
+# # Assign to individual objects
+# survey_cleaned <- survey_data$survey #89184 obs. of 84 variables
+# survey_schema <- survey_data$schema #78 obs. of 6 variables
+# 
+# # Renaming some columns using select
+# survey_renamed <- survey_cleaned %>%
+#   dplyr::select(salary_usd = converted_comp_yearly,
+#                 profession = main_branch,
+#                 coding_as_hobby = coding_activities,
+#                 years_professional_coding = years_code_pro,
+#                 company_size = org_size,
+#                 years_work_exp = work_exp,
+#                 manager_role = i_cor_pm,
+#                 everything()) #select for remaining columns as is
 
 survey_hobby <- survey_renamed %>% 
   mutate(coding_as_hobby_clean = case_when(grepl("I don’t code outside of work", coding_as_hobby) ~ "no",
@@ -150,13 +172,13 @@ country_n_resp <- survey_country %>%
   summarise(median_salary = round(median(salary_usd, na.rm = TRUE)), n_resp = n()) %>%
   arrange(desc(n_resp))
 
-survey_resp <- survey_country %>%
+survey_resp <- survey_country %>% 
   inner_join(country_n_resp, by = "country")
 
-survey_remote <- survey_resp %>%
+survey_remote <- survey_resp %>% 
   drop_na(remote_work)
 
-survey_proc <- survey_remote %>%
+survey_proc <- survey_remote %>% 
   mutate(salary_usd = salary_usd %>% is.na %>% ifelse(median_salary, salary_usd))
 ```
 
@@ -196,13 +218,13 @@ In the early stages of EDA you are encouraged to explore every idea that comes t
 ## Import your data
 
 We can read .csv files into R using `read_csv()`. The first argument is the most important: the path to the file. You can think about the path as the address of the file: the file is called `survey_results_public.csv` and it is within the `stack-overflow-developer-survey-2023.zip` file.
+
 The `survey_results_public.csv` is already loaded within this tutorial as the `survey_raw` object using the code below:
 
 ```
 survey_zip_file <- "stack-overflow-developer-survey-2023.zip"
 
-survey_raw <- readr::read_csv(unz(survey_zip_file, 
-                         'survey_results_public.csv'))
+survey_raw <- readr::read_csv(unz(survey_zip_file, 'survey_results_public.csv'))
 ```
 
 You can read more about how to get different formats of data types into R [here](https://jhudatascience.org/tidyversecourse/get-data.html).

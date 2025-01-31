@@ -7,8 +7,8 @@ output: html_document
 ## Import data
 
 ```{r} 
-# import the file
-data = readr::read_csv('data/survey_results_public.csv')
+# import the file using here
+data = here::here(readr::read_csv("data", "survey_results_public.csv"))
 ```
 
 ## View data
