@@ -11,39 +11,44 @@ description: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
-#load libraries
-library(tidyverse)
-library(janitor)
-library(naniar)
-library(skimr)
-library(explore)
+# Load libraries
 library(dplyr)
 library(eeptools)
-library(rio)
-library(usydColours)
+library(explore)
 library(GGally)
+library(here)
+library(janitor)
+library(naniar)
+library(rio)
+library(skimr)
+library(tidyverse)
+library(usydColours)
 
-#set global theme for plots
+# Set global theme for plots
 theme_set(theme_minimal())
 
-#read in data
-destfile <- "data/stack-overflow-developer-survey-2023.zip"
-if (!file.exists(destfile)){
-url <- 'https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip'
-download.file(url, destfile)
+# Define paths using here
+data_dir <- here::here("data")
+destfile <- here::here(data_dir, "stack-overflow-developer-survey-2023.zip")
+
+# Download file if it doesn't exist
+if (!file.exists(destfile)) {
+  url <- "https://cdn.stackoverflow.co/files/jo7n4k8s/production/49915bfd46d0902c3564fd9a06b509d08a20488c.zip/stack-overflow-developer-survey-2023.zip"
+  download.file(url, destfile, mode = "wb") #mode wb ensures also downloaded correctly on windows
 }
 
-#load in survey raw
-zip_file <- "data/stack-overflow-developer-survey-2023.zip"
-survey_raw <- readr::read_csv(unz(zip_file, 'survey_results_public.csv'))
+# Read and clean both survey data and schema in one go
+survey_data <- list(survey = "survey_results_public.csv",
+                    schema = "survey_results_schema.csv") %>%
+  map(~read_csv(unz(destfile, .x)) %>% 
+  janitor::clean_names())
 
-survey_cleaned <- survey_raw %>%
-  janitor::clean_names()
+# Assign to individual objects
+survey_cleaned <- survey_data$survey #89184 obs. of 84 variables
+survey_schema <- survey_data$schema #78 obs. of 6 variables
 
-#load in survey schema
-zip_file_schema <- "data/stack-overflow-developer-survey-2023.zip"
-survey_schema <- read_csv(unz(zip_file_schema, 'survey_results_schema.csv')) %>%
-  janitor::clean_names()
+
+
 
 lookup <- c(salary_usd = "converted_comp_yearly", 
             profession = "main_branch",
@@ -53,8 +58,7 @@ lookup <- c(salary_usd = "converted_comp_yearly",
             years_work_exp = "work_exp",
             manager_role = "i_cor_pm")
 
-survey_renamed <- survey_cleaned %>%
-  rename(all_of(lookup))
+survey_renamed <- survey_cleaned %>% rename(all_of(lookup))
 
 survey_hobby <- survey_renamed %>% 
   mutate(coding_as_hobby_clean = case_when(grepl("I don’t code outside of work", coding_as_hobby) ~ "no",
