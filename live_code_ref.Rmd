@@ -21,7 +21,10 @@ theme_set(theme_minimal())
 
 `here` makes it easier to work with file paths by automatically detecting your project's root directory, so you don't have to worry about working directory issues or writing complex relative paths.
 
-Resource: <https://here.r-lib.org>
+Resource: 
+
+- https://here.r-lib.org
+- https://www.r-bloggers.com/2024/05/easy-data-cleaning-with-the-janitor-package/
 
 ```{r import data}
 # import the file using here and read_csv, expecting 89184 obs. of 84 variables
@@ -31,16 +34,6 @@ survey_data = readr::read_csv(here::here("data", "survey_results_public.csv")) %
 ## View data
 
 The following are some ways to examine the data!
-
-```{r glimpse}
-# quick peek
-glimpse(survey_data)
-```
-
-```{r skim}
-# with a little more detail
-skimr::skim(survey_data)
-```
 
 ```{r head}
 # view the first few rows, default is 6
@@ -72,7 +65,7 @@ nrow(survey_data)
 
 Resource: <https://cengel.github.io/R-data-wrangling/dplyr.html>
 
-### Select column or row by position
+### Select col or row by position
 
 ```{r single row}
 # select single row based on position
@@ -116,7 +109,7 @@ survey_data %>%
   dplyr::slice_tail(n = 10)
 ```
 
-### Select column by name
+### Select col by name
 
 ```{r}
 # Select specific column by name 
@@ -231,9 +224,16 @@ dim(survey_data_wide)
 
 1.  Convert your own data into a tidier format.
 
-## Clean data
 
-### Missing Data
+## Missing Data
+
+Different types of missing data:
+
+- NA values
+- Empty strings
+- Just whitespace
+- Zeros (potential missing codes)
+- Special codes e.g., "NA", "None", "null", "999"
 
 ```{r check for NA}
 is.na(survey_data)
@@ -260,50 +260,88 @@ naniar::gg_miss_var(survey_data)
 
 ### What to do about them?
 
-1.   Ignore
-2.   Remove
-3.   Replace
+1.   Ignore - Leave as is
+2.   Remove - Completely remove or apply threshold
+3.   Replace - Imputation 
 
-```{r}
-# remove
-data_dropna <- drop_na(data)
-data_dropna
+#### Remove
+
+```{r drop na}
+# Remove rows with ANY missing values - not recommended because in most cases will remove everything
+drop_na(survey_data)
+
+# Remove with a certain threshold, in this case drop vars with >20% NAs
+survey_data_dropped <- survey_data %>%
+  dplyr::select(where(~mean(is.na(.)) < 0.7))
+
+# Check which columns were dropped
+setdiff(names(survey_data), names(survey_data_dropped))
+```
+#### Replace
+
+On a case by cases basis can also:
+
+- Impute mean/median for numerical
+- Assign "Missing" or "Unknown" for categorical
+
+```{r fill}
+# Not too sure about fill here, ok for time series
+survey_data_filled <- survey_data %>%
+  fill(everything(), .direction = "down")
+
+colSums(is.na(survey_data_filled))
 ```
 
-```{r}
-# fill, but what does it do?
-fill(data)
+Resource for summarise: https://dplyr.tidyverse.org/reference/summarise.html
+
+```{r count zeros}
+# Only show columns with zeros
+survey_data %>%
+  summarise(across(everything(), ~sum(. == 0, na.rm = TRUE))) %>%
+  pivot_longer(everything(),
+              names_to = "column",
+              values_to = "zero_count") %>%
+  filter(zero_count > 0) %>%  
+  arrange(desc(zero_count))
 ```
-
-```{r}
-which(data == 0, arr.ind = TRUE)
-```
-
-
-
-
-
-
 
 ## Duplicates
 
-```{r}
-# check values in column, should match length if all unique
-number_of_ages <- nrow(unique(data[, 'Age']))
-number_of_ages
+```{r get dupes}
+# No dupes found
+survey_data %>% janitor::get_dupes()
+
+survey_data_unique <- survey_data %>% distinct()
+
+setdiff(survey_data, survey_data_unique)
 ```
 
-```{r}
-nrow(data)
-```
+```{r check dupes examples}
+# check the values in a column, if should be unique should match length of data
+survey_data %>%
+  summarise(unique_ages = n_distinct(age),
+            total_rows = n())
 
-```{r}
-# drop duplicates if exact
-distinct(data)
+survey_data %>%
+  summarise(unique_ages = n_distinct(response_id),
+            total_rows = n())
 ```
 
 ## Data Types
 
-```{r}
-sapply(data, class)
+```{r glimpse}
+# a quick peek
+glimpse(survey_data)
 ```
+
+```{r skim}
+# with a little more detail
+skimr::skim(survey_data)
+```
+
+## Numbers
+
+```{r}
+
+```
+
