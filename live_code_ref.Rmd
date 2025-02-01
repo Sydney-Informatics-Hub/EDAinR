@@ -4,10 +4,13 @@ output: html_document
 
 # Exploratory Data Analysis in R
 
+Resource: https://r4ds.had.co.nz/tidy-data.html 
+
 ```{r setup, include=FALSE}
 # Load libraries
 library(ggplot2)
 library(here)
+library(skimr)
 library(tidyverse)
 
 # Set global theme for plots
@@ -22,12 +25,22 @@ Resource: <https://here.r-lib.org>
 
 ```{r import data}
 # import the file using here and read_csv, expecting 89184 obs. of 84 variables
-survey_data = readr::read_csv(here::here("data", "survey_results_public.csv"))
+survey_data = readr::read_csv(here::here("data", "survey_results_public.csv")) %>% janitor::clean_names()
 ```
 
 ## View data
 
 The following are some ways to examine the data!
+
+```{r glimpse}
+# quick peek
+glimpse(survey_data)
+```
+
+```{r skim}
+# with a little more detail
+skimr::skim(survey_data)
+```
 
 ```{r head}
 # view the first few rows, default is 6
@@ -120,7 +133,7 @@ Different ways to identify and count specific values/categories
 ```{r filter numeric}
 # Only grab those with comp total greater than 500, 000
 survey_data %>%
-  filter(CompTotal > 500000)
+  filter(comp_total > 500000)
 ```
 
 ### Specific cateogries
@@ -128,7 +141,7 @@ survey_data %>%
 ```{r filter category}
 # Only grab those from Australia
 survey_data %>%
-  filter(Country == "Australia")
+  filter(country == "Australia")
 ```
 
 ### Multiple conditions
@@ -136,7 +149,7 @@ survey_data %>%
 ```{r filter multiple}
 # Only grab those from Australia with a comp total greater than 500, 0000
 survey_data %>%
-  filter(CompTotal > 500000 & Country == "Australia")
+  filter(comp_total > 500000 & country == "Australia")
 ```
 
 ## Plotting Data
@@ -151,7 +164,7 @@ Resources:
 
 ```{r plot WorkExp}
 # Start with basic histogram
-ggplot(survey_data, aes(x = WorkExp)) +
+ggplot(survey_data, aes(x = work_exp)) +
   geom_histogram(bins = 30, na.rm = TRUE)
 
 # # Add colors and labels
@@ -173,27 +186,50 @@ ggplot(survey_data, aes(x = WorkExp)) +
 
 # Lunch Break 
 
-## Reformat data
+## Reshaping data
 
 Common problems: 
 - Variable across multiple columns 
 - Observations across multiple rows
 
-We want tidy data!
+Resource: https://cran.r-project.org/web/packages/tidyr/vignettes/pivot.html 
 
-Resource: https://r4ds.had.co.nz/tidy-data.html 
+### Pivot longer
 
-```{r}
-pivot_longer(survey_data, c('CompTotal', 'ConvertedCompYearly'), names_to = 'money', values_to = 'dollah')
+https://tidyr.tidyverse.org/reference/pivot_longer.html 
+
+```{r pivot longer}
+# making data longer by converting columns to rows
+survey_data_long <- survey_data %>%
+  pivot_longer(cols = -response_id, # keep ResponseId as identifier
+               names_to = "variable",
+               values_to = "value",
+               values_transform = as.character) #need to correct format
+
+# pivot_longer(survey_data, 
+#              c('CompTotal', 'ConvertedCompYearly'), 
+#              names_to = 'money', 
+#              values_to = 'dollah')
+
+dim(survey_data_long)
 ```
 
-```{r}
-pivot_wider(surveydata, names_from = Age, values_from = WorkExp)
+### Pivot wider
+
+https://tidyr.tidyverse.org/reference/pivot_wider.html
+
+```{r pivot wider}
+survey_data_wide <- survey_data %>%
+  pivot_wider(id_cols = response_id,
+              names_from = age,
+              values_from = -response_id)
+
+dim(survey_data_wide)
 ```
 
 ### Exercise 3
 
-1.  Convert your own data into tidy format
+1.  Convert your own data into a tidier format.
 
 ## Clean data
 
