@@ -111,16 +111,35 @@ survey_data %>%
 
 ## Filtering Data
 
+Different ways to identify and count specific values/categories
 
-
-
-
-### Using condition
+### Specific conditions
 
 ```{r}
-remote_pos_response <- subset(data, RemoteWork == 'Remote')
-remote_pos_response
+# Only grab those with comp total greater than 500, 000
+survey_data %>%
+  filter(CompTotal > 500000)
 ```
+
+### Specific cateogries
+
+```{r}
+# Only grab those from Australia
+survey_data %>%
+  filter(Country == "Australia")
+```
+
+### Multiple conditions
+
+```{r}
+# Only grab those from Australia with a comp total greater than 500, 0000
+survey_data %>%
+  filter(CompTotal > 500000 & Country == "Australia")
+```
+
+
+
+
 
 ## Plotting Data
 
