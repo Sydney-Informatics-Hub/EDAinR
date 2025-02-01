@@ -15,7 +15,7 @@ theme_set(theme_minimal())
 
 ## Import data
 
-The `here` package makes it easier to work with file paths by automatically detecting your project's root directory, so you don't have to worry about working directory issues or writing complex relative paths.
+`here` makes it easier to work with file paths by automatically detecting your project's root directory, so you don't have to worry about working directory issues or writing complex relative paths.
 
 Resource: https://here.r-lib.org 
 
@@ -53,43 +53,67 @@ nrow(survey_data)
 
 ## Select data
 
-The `dplyr` package is part of the larger `tidyverse`, it provides convinient tools for the most common data manipulation tasks.
+`dplyr` is part of the larger `tidyverse`, it provides convenient tools for the most common data manipulation tasks e.g., selecting rows/columns and filtering.
 
 Resource: https://cengel.github.io/R-data-wrangling/dplyr.html
-
-
 
 ### Select column or row by position
 
 ```{r}
 # select single row based on position
-survey_data %>% dplyr::slice(2) # R uses 1-based indexing
+survey_data %>% 
+  dplyr::slice(2) # R uses 1-based indexing
 ```
 
 ```{r}
 # select single column based on position
-survey_data %>% dplyr::select(2)
+survey_data %>% 
+  dplyr::select(2)
 ```
 
 ```{r}
 # select a range of rows based on position
-survey_data %>% dplyr::slice(2:5)
+survey_data %>% 
+  dplyr::slice(2:5)
+```
+
+```{r}
+# select specific rows based on position
+survey_data %>% 
+  dplyr::slice(c(2, 6, 11))
 ```
 
 ```{r} 
 # select a range of columns based on position
-many_cols <- data[,3:6]
-many_cols
+survey_data %>% 
+  dplyr::select(2:5)
 ```
-
-
-
-### Using labels
 
 ```{r}
-remote_work_col <- data[, 'RemoteWork']
-remote_work_col
+# select specific columns based on position
+survey_data %>% 
+  dplyr::select(c(2, 6, 11))
 ```
+
+```{r}
+# Negative indexing, select last 10 rows
+survey_data %>% 
+  dplyr::slice_tail(n = 10)
+```
+
+### Select column by name
+
+```{r}
+# Select specific column by name 
+survey_data %>% 
+  dplyr:: select(RemoteWork)
+```
+
+## Filtering Data
+
+
+
+
 
 ### Using condition
 
