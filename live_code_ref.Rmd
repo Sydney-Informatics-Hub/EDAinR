@@ -235,32 +235,34 @@ dim(survey_data_wide)
 
 ### Missing Data
 
-```{r}
-# check for nulls
-is.na(data)
+```{r check for NA}
+is.na(survey_data)
+colSums(is.na(survey_data))
 ```
 
-```{r}
-sum(is.na(data))
+`naniar` provides principled, tidy ways to summarise, visualise, and manipulate missing data with minimal deviations from the workflows in ggplot2 and tidy data. 
+
+Resources: 
+
+- https://r4ds.hadley.nz/missing-values 
+- https://www.r-bloggers.com/2021/04/handling-missing-values-in-r/ 
+- https://naniar.njtierney.com
+
+```{r pct missing}
+# Shows count AND percentage missing
+naniar::miss_var_summary(survey_data) 
 ```
 
-```{r}
-summarise_all(data, ~ sum(is.na(.)))
-```
-
-```{r}
-which(data == 999, arr.ind = TRUE)
-```
-
-```{r}
-unique(single_col)
+```{r missing plot}
+# Visualize missing patterns
+naniar::gg_miss_var(survey_data)
 ```
 
 ### What to do about them?
 
--   Ignore
--   remove
--   replace
+1.   Ignore
+2.   Remove
+3.   Replace
 
 ```{r}
 # remove
@@ -276,6 +278,12 @@ fill(data)
 ```{r}
 which(data == 0, arr.ind = TRUE)
 ```
+
+
+
+
+
+
 
 ## Duplicates
 
