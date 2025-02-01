@@ -18,9 +18,9 @@ theme_set(theme_minimal())
 
 `here` makes it easier to work with file paths by automatically detecting your project's root directory, so you don't have to worry about working directory issues or writing complex relative paths.
 
-Resource: https://here.r-lib.org 
+Resource: <https://here.r-lib.org>
 
-```{r import data} 
+```{r import data}
 # import the file using here and read_csv, expecting 89184 obs. of 84 variables
 survey_data = readr::read_csv(here::here("data", "survey_results_public.csv"))
 ```
@@ -49,14 +49,15 @@ colnames(survey_data)
 nrow(survey_data)
 ```
 
-### Exercise
-- Read your data into R and view it
+### Exercise 1
+
+1.  Read your data into R and view it
 
 ## Select data
 
 `dplyr` is part of the larger `tidyverse`, it provides convenient tools for the most common data manipulation tasks e.g., selecting rows/columns and filtering.
 
-Resource: https://cengel.github.io/R-data-wrangling/dplyr.html
+Resource: <https://cengel.github.io/R-data-wrangling/dplyr.html>
 
 ### Select column or row by position
 
@@ -84,7 +85,7 @@ survey_data %>%
   dplyr::slice(c(2, 6, 11))
 ```
 
-```{r range of columns} 
+```{r range of columns}
 # select a range of columns based on position
 survey_data %>% 
   dplyr::select(2:5)
@@ -144,42 +145,60 @@ survey_data %>%
 
 Resources:
 
-- https://ggplot2.tidyverse.org/articles/ggplot2.html
-- https://r-graph-gallery.com/ggplot2-package.html 
-- https://exts.ggplot2.tidyverse.org/gallery/
+-   <https://ggplot2.tidyverse.org/articles/ggplot2.html>
+-   <https://r-graph-gallery.com/ggplot2-package.html>
+-   <https://exts.ggplot2.tidyverse.org/gallery/>
 
-```{r}
-ggplot(data=data, aes(x=WorkExp)) +
-         geom_histogram()
+```{r plot WorkExp}
+# Start with basic histogram
+ggplot(survey_data, aes(x = WorkExp)) +
+  geom_histogram(bins = 30, na.rm = TRUE)
+
+# # Add colors and labels
+# ggplot(survey_data, aes(x = WorkExp)) +
+#   geom_histogram(bins = 30, 
+#                 na.rm = TRUE,
+#                 fill = "steelblue",
+#                 color = "white") +
+#   labs(title = "Distribution of Work Experience",
+#        subtitle = "Stack Overflow Developer Survey 2023",
+#        x = "Years of Work Experience",
+#        y = "Count")
 ```
 
-### Exercise
-- Plot your own data
-- choose single column to plot
+### Exercise 2
 
-## Lunch Break
+1.  Plot your own data
+2.  Choose single column to plot
+
+# Lunch Break 
 
 ## Reformat data
 
-Common problems
-- variable across multiple columns 
-- observation across multiple rows
+Common problems: 
+- Variable across multiple columns 
+- Observations across multiple rows
+
+We want tidy data!
+
+Resource: https://r4ds.had.co.nz/tidy-data.html 
 
 ```{r}
-library(tidyverse)
-pivot_longer(data, c('CompTotal', 'ConvertedCompYearly'), names_to = 'money', values_to = 'dollah')
+pivot_longer(survey_data, c('CompTotal', 'ConvertedCompYearly'), names_to = 'money', values_to = 'dollah')
 ```
 
 ```{r}
-pivot_wider(data, names_from = Age, values_from = WorkExp)
+pivot_wider(surveydata, names_from = Age, values_from = WorkExp)
 ```
 
-## Exercise
-- convert your own data into tidy format
+### Exercise 3
+
+1.  Convert your own data into tidy format
 
 ## Clean data
 
 ### Missing Data
+
 ```{r}
 # check for nulls
 is.na(data)
@@ -202,9 +221,10 @@ unique(single_col)
 ```
 
 ### What to do about them?
-- Ignore
-- remove 
-- replace
+
+-   Ignore
+-   remove
+-   replace
 
 ```{r}
 # remove
