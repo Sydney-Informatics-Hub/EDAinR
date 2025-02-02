@@ -463,8 +463,26 @@ levels(survey_data_comp_yearly$comp_factor)
 
 ### String
 
-```{r}
+What is a string and how to check?
 
+```{r}
+#take code_activities as an example
+unique(survey_data$coding_activities)
+
+# Check type of a single value
+typeof(survey_data$coding_activities[1])  # "character"
+class(survey_data$coding_activities[1])   # "character"
+
+# Useful string operations with stringr
+survey_data %>%
+  filter(!is.na(coding_activities)) %>%
+  transmute(
+    original = coding_activities,
+    length = str_length(coding_activities),
+    uppercase = str_to_upper(coding_activities),
+    n_activities = str_count(coding_activities, ";") + 1,
+    first_activity = str_extract(coding_activities, "^[^;]+")
+  )
 ```
 
 ### DateTime
