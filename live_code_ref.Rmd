@@ -337,12 +337,33 @@ glimpse(survey_data)
 skimr::skim(survey_data)
 
 #summary(survey_data)
+#str(survey_data)
 ```
 
-### Numbers
+### Numeric
+
+R doesn't disintguish between integers and floats, most numbers in R are "numeric" (double).
 
 ```{r}
+num <- 3
+class(num) #integer in python
+typeof(num) #will show as dbl
 
+float <- 3.14
+class(float)  # Also "numeric"
+typeof(float) # Also "double"
+
+class(survey_data$response_id)
+typeof(survey_data$response_id)
+
+#check if numeric
+is.numeric(survey_data$response_id)
+is.double(survey_data$response_id)
+is.integer(survey_data$response_id)
+
+survey_data %>%
+  select(where(is.numeric)) %>%
+  summary()
 ```
 
 ### String
