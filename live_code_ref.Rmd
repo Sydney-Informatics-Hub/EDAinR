@@ -329,19 +329,36 @@ survey_data %>%
 
 ## Data Types
 
-```{r glimpse}
+```{r glimpse or skim}
 # a quick peek
 glimpse(survey_data)
-```
 
-```{r skim}
 # with a little more detail
 skimr::skim(survey_data)
+
+#summary(survey_data)
 ```
 
-## Numbers
+### Numbers
 
 ```{r}
 
 ```
 
+### String
+
+```{r}
+
+```
+
+### DateTime
+
+```{r}
+
+```
+
+### Outliers
+
+```{r}
+
+```
