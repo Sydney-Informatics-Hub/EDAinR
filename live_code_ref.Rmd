@@ -342,7 +342,7 @@ skimr::skim(survey_data)
 
 ### Numeric
 
-R doesn't disintguish between integers and floats, most numbers in R are "numeric" (double).
+R doesn't distinguish between integers and floats, most numbers in R are "numeric" (double).
 
 ```{r}
 num <- 3
@@ -365,6 +365,44 @@ survey_data %>%
   select(where(is.numeric)) %>%
   summary()
 ```
+
+### Categorical
+
+```{r}
+boolean <- FALSE 
+class(boolean) #logical in R
+typeof(boolean)
+
+#there isn't any in our data
+survey_data %>%
+  dplyr::select(where(is.logical)) %>%
+  summary()
+
+#so let's make one, picking coding_activities
+unique(survey_data$coding_activities)
+
+# check how much contain "Hobby", still not logical
+survey_data %>%
+  mutate(hobby = str_detect(coding_activities, "Hobby")) %>%
+  count(hobby, na.rm = TRUE) %>%
+  mutate(pct = n/sum(n) * 100)
+
+#remove NAs and only remove TRUE/FALSE
+survey_data_hobby <- survey_data %>%
+  filter(!is.na(coding_activities)) %>%  # Remove NAs first
+  mutate(hobby = str_detect(coding_activities, "Hobby")) %>%
+  dplyr::select(coding_activities, hobby)
+
+class(survey_data_hobby$hobby) # now logical
+```
+
+```{r}
+# what happens if we make something that isn't logical, logical?
+
+
+```
+
+
 
 ### String
 
