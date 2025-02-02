@@ -329,6 +329,8 @@ survey_data %>%
 
 ## Data Types
 
+Different ways to look at the overall data structure, classes and distributions
+
 ```{r classes}
 # a quick peek
 glimpse(survey_data)
@@ -396,23 +398,28 @@ survey_data_hobby <- survey_data %>%
 class(survey_data_hobby$hobby) # now logical
 ```
 
+What happens if we make something that isn't logical, logical?
+
 ```{r num to logical}
 class(survey_data$converted_comp_yearly) #numeric
 
-# what happens if we make something that isn't logical, logical?
 survey_data_comp_logical <- survey_data %>%
   select(converted_comp_yearly) %>%
-  mutate(comp_logical = as.logical(converted_comp_yearly),
-         comp_logical_sum = sum(comp_logical, na.rm = TRUE)) # Count TRUEs 
+  mutate(comp_logical = as.logical(converted_comp_yearly))
+
+survey_data_comp_logical #anything not 0 counts as True
 ```
 
+Character - Stores text strings, sorts alphabetically, easier text manipulation
+Factor - Stores cateogoriess as integers internally with predefined levels, better for modelling and for plotting with specific order
+
 ```{r factors}
-class(survey_data$age) #character - stores text strings, sorts alphabetically, easier text manipulation
+class(survey_data$age) #character
 unique(survey_data$age) 
 
-# convert age to factor, stores cateogirs as integers internally with predefined levels, better for modelling and for plotting with specific order
+# convert age to factor
 survey_data_age <- survey_data %>%
-  select(age) %>%
+  dplyr::select(age) %>%
   mutate(age_factor = factor(age)) %>%
   count(age_factor)
 
@@ -422,7 +429,7 @@ levels(survey_data_age$age_factor)
 
 #order levels
 survey_data_age <- survey_data %>%
-  select(age) %>%
+  dplyr::select(age) %>%
   mutate(age_factor = factor(age, levels=c("Under 18 years old",
                                            "18-24 years old",
                                            "25-34 years old",
@@ -438,48 +445,21 @@ class(survey_data_age$age_factor)
 levels(survey_data_age$age_factor)
 ```
 
+What happens if we make something not a factor, a factor?
+
 ```{r}
+class(survey_data$converted_comp_yearly) #numeric
+unique(survey_data$converted_comp_yearly) 
+levels(survey_data$converted_comp_yearly) #NULL because not factor
+
 # Try to convert compensation to factor (probably not meaningful)
-survey_data %>%
-  mutate(comp_factor = factor(converted_comp_yearly)) %>%
-  summarise(
-    n_categories = n_distinct(comp_factor),
-    first_few_levels = head(levels(comp_factor))
-  )
+survey_data_comp_yearly <- survey_data %>%
+  dplyr::select(converted_comp_yearly) %>%
+  mutate(comp_factor = factor(converted_comp_yearly))
 
-# More useful summary of categorical conversion
-survey_data %>%
-  summarise(
-    # Age as factor
-    age_categories = n_distinct(age),
-    age_examples = list(unique(age)),
-    
-    # Compensation as factor (showing why it might not be useful)
-    comp_categories = n_distinct(converted_comp_yearly),
-    comp_range = paste(
-      min(converted_comp_yearly, na.rm = TRUE),
-      max(converted_comp_yearly, na.rm = TRUE),
-      sep = " to "
-    )
-  )
-
-# Full type conversion summary
-survey_data %>%
-  summarise(
-    # Logical conversion
-    comp_true_count = sum(as.logical(converted_comp_yearly), na.rm = TRUE),
-    
-    # Factor conversions
-    age_levels = list(levels(factor(age))),
-    age_counts = list(table(age)),
-    
-    # Numeric summary
-    comp_unique = n_distinct(converted_comp_yearly),
-    comp_min = min(converted_comp_yearly, na.rm = TRUE),
-    comp_max = max(converted_comp_yearly, na.rm = TRUE)
-  )
+class(survey_data_comp_yearly$comp_factor)
+levels(survey_data_comp_yearly$comp_factor) 
 ```
-
 
 ### String
 
