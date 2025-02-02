@@ -369,7 +369,7 @@ survey_data %>%
   summary()
 ```
 
-### Categorical
+### Logical
 
 ```{r logical}
 boolean <- FALSE 
@@ -410,6 +410,8 @@ survey_data_comp_logical <- survey_data %>%
 
 survey_data_comp_logical #anything not 0 counts as True
 ```
+
+### Factors
 
 Character - Stores text strings, sorts alphabetically, easier text manipulation
 Factor - Stores cateogoriess as integers internally with predefined levels, better for modelling and for plotting with specific order
@@ -461,8 +463,6 @@ survey_data_comp_yearly <- survey_data %>%
 class(survey_data_comp_yearly$comp_factor)
 levels(survey_data_comp_yearly$comp_factor) 
 ```
-
-### String
 
 What is a string and how to check?
 
@@ -531,8 +531,21 @@ survey_data %>%
   mutate(comp_as_date = as_datetime(converted_comp_yearly))
 ```
 
-### Outliers
+## Identifying Outliers
 
 ```{r}
 
 ```
+
+### Exporting cleaned data
+
+```{r}
+
+```
+
+### Exercise 4
+
+1. Check for outliers
+2. Decide how to deal with them
+3. Dix outliers
+4. Save your data
