@@ -329,7 +329,7 @@ survey_data %>%
 
 ## Data Types
 
-```{r glimpse or skim}
+```{r classes}
 # a quick peek
 glimpse(survey_data)
 
@@ -344,7 +344,7 @@ skimr::skim(survey_data)
 
 R doesn't distinguish between integers and floats, most numbers in R are "numeric" (double).
 
-```{r}
+```{r numeric}
 num <- 3
 class(num) #integer in python
 typeof(num) #will show as dbl
@@ -368,7 +368,7 @@ survey_data %>%
 
 ### Categorical
 
-```{r}
+```{r logical}
 boolean <- FALSE 
 class(boolean) #logical in R
 typeof(boolean)
@@ -378,7 +378,7 @@ survey_data %>%
   dplyr::select(where(is.logical)) %>%
   summary()
 
-#so let's make one, picking coding_activities
+#so let's make one!
 unique(survey_data$coding_activities)
 
 # check how much contain "Hobby", still not logical
@@ -396,8 +396,15 @@ survey_data_hobby <- survey_data %>%
 class(survey_data_hobby$hobby) # now logical
 ```
 
-```{r}
+```{r num to logical}
 # what happens if we make something that isn't logical, logical?
+survey_data_convert_logical <- survey_data %>%
+  mutate(comp_logical = as.logical(converted_comp_yearly),
+         comp_logical_sum = sum(comp_logical, na.rm = TRUE))  # Count TRUEs
+```
+
+```{r factors}
+# convert age to factor 
 
 
 ```
