@@ -450,7 +450,7 @@ levels(survey_data_age$age_factor)
 
 What happens if we make something not a factor, a factor?
 
-```{r}
+```{r num to factor}
 class(survey_data$converted_comp_yearly) #numeric
 unique(survey_data$converted_comp_yearly) 
 levels(survey_data$converted_comp_yearly) #NULL because not factor
@@ -466,7 +466,7 @@ levels(survey_data_comp_yearly$comp_factor)
 
 What is a string and how to check?
 
-```{r}
+```{r string}
 #take code_activities as an example
 unique(survey_data$coding_activities)
 
@@ -505,7 +505,7 @@ survey_data %>%
 
 ### DateTime
 
-```{r}
+```{r ymd}
 # Create a date from string
 date_str <- "2020-01-01"
 class(date_str) #character
@@ -525,27 +525,97 @@ dates_example <- tibble(
   datetime = ymd_hms("2020-01-01 12:30:45"))
 
 # Try to convert non-date data (like the compensation example)
-# works but everything counted as ms since 1970-01-01
+# works but everything counted as milliseconds/seconds since 1970-01-01
 survey_data %>%
   dplyr::select(converted_comp_yearly) %>%
   mutate(comp_as_date = as_datetime(converted_comp_yearly))
 ```
 
-## Identifying Outliers
+## Outliers
 
-```{r}
+Identify outliers by plotting!
 
+```{r histogram}
+# look at the distribution
+# Extremely high values obviously skewing
+survey_data %>%
+  filter(!is.na(comp_total)) %>% # 46.2% missing as NA so will get an error, lets remove
+  ggplot(aes(x = comp_total)) +
+  geom_histogram(bins=30) +
+  labs(title = "Distribution of Compensation")
+
+# Look at distribution with limit
+survey_data %>%
+  filter(!is.na(comp_total)) %>%
+  ggplot(aes(x = comp_total)) +
+  geom_histogram() +
+  xlim(0, 1000000) +
+  labs(title = "Distribution of Compensation (Limited Range)")
+
+# Find high values
+survey_data %>%
+  filter(!is.na(comp_total)) %>%
+  count(high_salary = comp_total > 1000000) %>%
+  mutate(pct = n/sum(n) * 100)
+
+# Create dataset without outliers
+survey_data_filtered <- survey_data %>%
+  filter(comp_total < 10000000) #removes 4521
 ```
 
-### Exporting cleaned data
+```{r scatterplot}
+# Scatter plot with work experience and outliers
+ggplot(survey_data, aes(x = work_exp, y = comp_total)) +
+  geom_point() +
+  labs(title = "Compensation vs Work Experience (With Outliers)")
+
+# Now without outliers
+ggplot(survey_data_filtered, aes(x = work_exp, y = comp_total)) +
+  geom_point() +
+  labs(title = "Compensation vs Work Experience (Without Outliers)")
+
+# Replace outliers with mean
+survey_data_replaced <- survey_data %>%
+  mutate(comp_replaced = case_when(comp_total > 10000000 ~ mean(comp_total, na.rm = TRUE),
+                                   TRUE ~ comp_total))
+
+# Replace outliers with mean and create plot
+survey_data %>%
+  mutate(comp_replaced = case_when(
+    converted_comp_yearly > 10000000 ~ mean(converted_comp_yearly, na.rm = TRUE),
+    TRUE ~ converted_comp_yearly
+  )) %>%
+  ggplot(aes(x = work_exp, y = comp_replaced)) +
+  geom_point(alpha = 0.5) +  # alpha for transparency
+  labs(
+    title = "Compensation vs Work Experience",
+    subtitle = "Outliers replaced with mean",
+    x = "Years of Work Experience",
+    y = "Yearly Compensation"
+  ) +
+  theme_minimal()
+```
 
 ```{r}
+# Compare statistics before and after replacement
+summary(survey_data$converted_comp_yearly) # Original
+summary(survey_data_replaced$comp_replaced) # After replacement
 
+# Or if you want to compare both side by side
+survey_data_replaced %>%
+  select(converted_comp_yearly, comp_replaced) %>%
+  summary()
+```
+
+### Basic export
+
+```{r}
+write_csv(survey_data_replaced, here("data", "survey_data_cleaned.csv"))
 ```
 
 ### Exercise 4
 
 1. Check for outliers
 2. Decide how to deal with them
-3. Dix outliers
+3. Fix outliers
 4. Save your data
