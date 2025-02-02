@@ -10,6 +10,7 @@ Resource: https://r4ds.had.co.nz/tidy-data.html
 # Load libraries
 library(ggplot2)
 library(here)
+library(lubridate)
 library(skimr)
 library(tidyverse)
 
@@ -481,14 +482,53 @@ survey_data %>%
     length = str_length(coding_activities),
     uppercase = str_to_upper(coding_activities),
     n_activities = str_count(coding_activities, ";") + 1,
-    first_activity = str_extract(coding_activities, "^[^;]+")
-  )
+    first_activity = str_extract(coding_activities, "^[^;]+")) %>%
+  view()
+
+# # String manipulation examples
+# survey_data %>%
+#   filter(!is.na(coding_activities)) %>%
+#   mutate(
+#     # Split into list
+#     activities_list = str_split(coding_activities, ";"),
+#     # Count occurrences
+#     n_semicolons = str_count(coding_activities, ";"),
+#     # Extract patterns
+#     first_word = str_extract(coding_activities, "\\w+"),
+#     # Replace text
+#     replaced = str_replace(coding_activities, "Hobby", "HOBBY"),
+#     # Convert case
+#     upper = str_to_upper(coding_activities),
+#     lower = str_to_lower(coding_activities)
+#   )
 ```
 
 ### DateTime
 
 ```{r}
+# Create a date from string
+date_str <- "2020-01-01"
+class(date_str) #character
 
+# convert to dates in year-month-day using lubridate
+date_time <- lubridate::ymd(date_str) 
+
+class(date_time)  # date
+typeof(date_time) #dbl
+
+# Different ways to create dates
+dates_example <- tibble(
+  date_str = "2020-01-01",
+  date_ymd = ymd(date_str),
+  date_mdy = mdy("01-01-2020"),
+  date_dmy = dmy("01-01-2020"),
+  datetime = ymd_hms("2020-01-01 12:30:45"))
+
+# Try to convert non-date data (like the compensation example)
+# works but everything counted as ms since 1970-01-01
+survey_data %>%
+  dplyr::select(converted_comp_yearly) %>%
+  mutate(comp_as_date = as_datetime(converted_comp_yearly))
 ```
 
 ### Outliers
