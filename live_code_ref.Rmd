@@ -4,187 +4,618 @@ output: html_document
 
 # Exploratory Data Analysis in R
 
+Resource: https://r4ds.had.co.nz/tidy-data.html 
+
+```{r setup, include=FALSE}
+# Load libraries
+library(ggplot2)
+library(here)
+library(lubridate)
+library(skimr)
+library(tidyverse)
+
+# Set global theme for plots
+theme_set(theme_minimal())
+```
+
 ## Import data
 
-```{r} 
-# import the file
-data = readr::read_csv('data/survey_results_public.csv')
+`here` makes it easier to work with file paths by automatically detecting your project's root directory, so you don't have to worry about working directory issues or writing complex relative paths.
 
+Resource: 
+
+- https://here.r-lib.org
+- https://www.r-bloggers.com/2024/05/easy-data-cleaning-with-the-janitor-package/
+
+```{r import data}
+# import the file using here and read_csv, expecting 89184 obs. of 84 variables
+survey_data <- read_csv(here::here("data", "survey_results_public.csv")) %>% clean_names()
 ```
 
 ## View data
-```{r}
-# inspect the file
-head(data)
+
+The following are some ways to examine the data!
+
+```{r head}
+# view the first few rows, default is 6
+head(survey_data)
 ```
 
-```{r}
-tail(data)
-```
-```{r}
-# columns
-colnames(data)
-
+```{r tail}
+# view the last few rows, default is 6
+tail(survey_data)
 ```
 
-
-```{r}
-# rows
-
-row.names(data)
-
+```{r colnames}
+# view column names
+colnames(survey_data)
 ```
 
+```{r number of rows}
+# count number of rows
+nrow(survey_data)
+```
 
-## Exercise
-- Read your data into R and view it
+### Exercise 1
+
+1.  Read your data into R and view it
 
 ## Select data
-### Using position
 
-```{r}
-# single row
-single_row <- data[3,]
-single_row
-```
-```{r}
-# single column
-single_col <- data[,3]
-single_col
+`dplyr` is part of the larger `tidyverse`, it provides convenient tools for the most common data manipulation tasks e.g., selecting rows/columns and filtering.
 
-```
+Resource: <https://cengel.github.io/R-data-wrangling/dplyr.html>
 
-```{r}
-# range
-many_rows <- data[3:6,]
-many_rows
+### Select col or row by position
+
+```{r single row}
+# select single row based on position
+survey_data %>% 
+  dplyr::slice(2) # R uses 1-based indexing
 ```
 
-```{r}
-many_cols <- data[,3:6]
-many_cols
+```{r single column}
+# select single column based on position
+survey_data %>% 
+  dplyr::select(2)
 ```
 
-### Using labels
-
-```{r}
-remote_work_col <- data[, 'RemoteWork']
-remote_work_col
+```{r range of rows}
+# select a range of rows based on position
+survey_data %>% 
+  dplyr::slice(2:5)
 ```
 
-### using condition
-
-```{r}
-remote_pos_response <- subset(data, RemoteWork == 'Remote')
-remote_pos_response
+```{r specific rows}
+# select specific rows based on position
+survey_data %>% 
+  dplyr::slice(c(2, 6, 11))
 ```
 
+```{r range of columns}
+# select a range of columns based on position
+survey_data %>% 
+  dplyr::select(2:5)
+```
+
+```{r specific cols}
+# select specific columns based on position
+survey_data %>% 
+  dplyr::select(c(2, 6, 11))
+```
+
+```{r negative index}
+# select last 10 rows
+survey_data %>% 
+  dplyr::slice_tail(n = 10)
+```
+
+### Select col by name
+
+```{r}
+# Select specific column by name 
+survey_data %>% 
+  dplyr:: select(RemoteWork)
+```
+
+## Filtering Data
+
+Different ways to identify and count specific values/categories
+
+### Specific conditions
+
+```{r filter numeric}
+# Only grab those with comp total greater than 500, 000
+survey_data %>%
+  filter(comp_total > 500000)
+```
+
+### Specific cateogries
+
+```{r filter category}
+# Only grab those from Australia
+survey_data %>%
+  filter(country == "Australia")
+```
+
+### Multiple conditions
+
+```{r filter multiple}
+# Only grab those from Australia with a comp total greater than 500, 0000
+survey_data %>%
+  filter(comp_total > 500000 & country == "Australia")
+```
 
 ## Plotting Data
 
-```{r}
-library(ggplot2)
-ggplot(data=data, aes(x=WorkExp)) +
-         geom_histogram()
+`ggplot2` is part of the `tidyverse` and it is a package that is dedicated to data visualization.
+
+Resources:
+
+-   <https://ggplot2.tidyverse.org/articles/ggplot2.html>
+-   <https://r-graph-gallery.com/ggplot2-package.html>
+-   <https://exts.ggplot2.tidyverse.org/gallery/>
+
+```{r plot WorkExp}
+# Start with basic histogram
+ggplot(survey_data, aes(x = work_exp)) +
+  geom_histogram(bins = 30, na.rm = TRUE)
+
+# # Add colors and labels
+# ggplot(survey_data, aes(x = WorkExp)) +
+#   geom_histogram(bins = 30, 
+#                 na.rm = TRUE,
+#                 fill = "steelblue",
+#                 color = "white") +
+#   labs(title = "Distribution of Work Experience",
+#        subtitle = "Stack Overflow Developer Survey 2023",
+#        x = "Years of Work Experience",
+#        y = "Count")
 ```
 
-## Exercise
-- Plot your own data
-- choose single column to plot
+### Exercise 2
 
+1.  Plot your own data
+2.  Choose single column to plot
 
-## Lunch Break
+# Lunch Break 
 
-## Reformat data
+## Reshaping data
 
-Common problems
-- variable across multiple columns 
-- observation across multiple rows
+Common problems: 
+- Variable across multiple columns 
+- Observations across multiple rows
 
-```{r}
-library(tidyverse)
-pivot_longer(data, c('CompTotal', 'ConvertedCompYearly'), names_to = 'money', values_to = 'dollah')
+Resource: https://cran.r-project.org/web/packages/tidyr/vignettes/pivot.html 
+
+### Pivot longer
+
+https://tidyr.tidyverse.org/reference/pivot_longer.html 
+
+```{r pivot longer}
+# making data longer by converting columns to rows
+survey_data_long <- survey_data %>%
+  pivot_longer(cols = -response_id, # keep ResponseId as identifier
+               names_to = "variable",
+               values_to = "value",
+               values_transform = as.character) #need to correct format
+
+# pivot_longer(survey_data, 
+#              c('CompTotal', 'ConvertedCompYearly'), 
+#              names_to = 'money', 
+#              values_to = 'dollah')
+
+dim(survey_data_long)
 ```
 
+### Pivot wider
 
-```{r}
-pivot_wider(data, names_from = Age, values_from = WorkExp)
+https://tidyr.tidyverse.org/reference/pivot_wider.html
+
+```{r pivot wider}
+survey_data_wide <- survey_data %>%
+  pivot_wider(id_cols = response_id,
+              names_from = age,
+              values_from = -response_id)
+
+dim(survey_data_wide)
 ```
 
-## Exercise
-- convert your own data into tidy format
+### Exercise 3
+
+1.  Convert your own data into a tidier format.
 
 
-## Clean data
+## Missing Data
 
-### Missing Data
-```{r}
-# check for nulls
-is.na(data)
+Different types of missing data:
+
+- NA values
+- Empty strings
+- Just whitespace
+- Zeros (potential missing codes)
+- Special codes e.g., "NA", "None", "null", "999"
+
+```{r check for NA}
+is.na(survey_data)
+colSums(is.na(survey_data))
 ```
 
-```{r}
-sum(is.na(data))
+`naniar` provides principled, tidy ways to summarise, visualise, and manipulate missing data with minimal deviations from the workflows in ggplot2 and tidy data. 
+
+Resources: 
+
+- https://r4ds.hadley.nz/missing-values 
+- https://www.r-bloggers.com/2021/04/handling-missing-values-in-r/ 
+- https://naniar.njtierney.com
+
+```{r pct missing}
+# Shows count AND percentage missing
+naniar::miss_var_summary(survey_data) 
 ```
 
-```{r}
-summarise_all(data, ~ sum(is.na(.)))
-```
-
-```{r}
-which(data == 999, arr.ind = TRUE)
-```
-
-
-
-```{r}
-unique(single_col)
+```{r missing plot}
+# Visualize missing patterns
+naniar::gg_miss_var(survey_data)
 ```
 
 ### What to do about them?
-- Ignore
-- remove 
-- replace
 
-```{r}
-# remove
-data_dropna <- drop_na(data)
-data_dropna
+1.   Ignore - Leave as is
+2.   Remove - Completely remove or apply threshold
+3.   Replace - Imputation 
+
+#### Remove
+
+```{r drop na}
+# Remove rows with ANY missing values - not recommended because in most cases will remove everything
+drop_na(survey_data)
+
+# Remove with a certain threshold, in this case drop vars with >20% NAs
+survey_data_dropped <- survey_data %>%
+  dplyr::select(where(~mean(is.na(.)) < 0.7))
+
+# Check which columns were dropped
+setdiff(names(survey_data), names(survey_data_dropped))
+```
+#### Replace
+
+On a case by cases basis can also:
+
+- Impute mean/median for numerical
+- Assign "Missing" or "Unknown" for categorical
+
+```{r fill}
+# Not too sure about fill here, ok for time series
+survey_data_filled <- survey_data %>%
+  fill(everything(), .direction = "down")
+
+colSums(is.na(survey_data_filled))
 ```
 
-```{r}
-# fill, but what does it do?
-fill(data)
+Resource for summarise: https://dplyr.tidyverse.org/reference/summarise.html
+
+```{r count zeros}
+# Only show columns with zeros
+survey_data %>%
+  summarise(across(everything(), ~sum(. == 0, na.rm = TRUE))) %>%
+  pivot_longer(everything(),
+              names_to = "column",
+              values_to = "zero_count") %>%
+  filter(zero_count > 0) %>%  
+  arrange(desc(zero_count))
 ```
-
-
-```{r}
-which(data == 0, arr.ind = TRUE)
-```
-
 
 ## Duplicates
 
-```{r}
-# check values in column, should match length if all unique
-number_of_ages <- nrow(unique(data[, 'Age']))
-number_of_ages
+```{r get dupes}
+# No dupes found
+survey_data %>% janitor::get_dupes()
+
+survey_data_unique <- survey_data %>% distinct()
+
+setdiff(survey_data, survey_data_unique)
 ```
 
-```{r}
-nrow(data)
+```{r check dupes examples}
+# check the values in a column, if should be unique should match length of data
+survey_data %>%
+  summarise(unique_ages = n_distinct(age),
+            total_rows = n())
+
+survey_data %>%
+  summarise(unique_ages = n_distinct(response_id),
+            total_rows = n())
 ```
-
-
-```{r}
-# drop duplicates if exact
-distinct(data)
-```
-
 
 ## Data Types
 
-```{r}
-sapply(data, class)
+Different ways to look at the overall data structure, classes and distributions
+
+```{r classes}
+# a quick peek
+glimpse(survey_data)
+
+# with a little more detail
+skimr::skim(survey_data)
+
+#summary(survey_data)
+#str(survey_data)
 ```
 
+### Numeric
+
+R doesn't distinguish between integers and floats, most numbers in R are "numeric" (double).
+
+```{r numeric}
+num <- 3
+class(num) #integer in python
+typeof(num) #will show as dbl
+
+float <- 3.14
+class(float)  # Also "numeric"
+typeof(float) # Also "double"
+
+class(survey_data$response_id)
+typeof(survey_data$response_id)
+
+#check if numeric
+is.numeric(survey_data$response_id)
+is.double(survey_data$response_id)
+is.integer(survey_data$response_id)
+
+survey_data %>%
+  select(where(is.numeric)) %>%
+  summary()
+```
+
+### Logical
+
+```{r logical}
+boolean <- FALSE 
+class(boolean) #logical in R
+typeof(boolean)
+
+#there isn't any in our data
+survey_data %>%
+  dplyr::select(where(is.logical)) %>%
+  summary()
+
+#so let's make one!
+unique(survey_data$coding_activities)
+
+# check how much contain "Hobby", still not logical
+survey_data %>%
+  mutate(hobby = str_detect(coding_activities, "Hobby")) %>%
+  count(hobby, na.rm = TRUE) %>%
+  mutate(pct = n/sum(n) * 100)
+
+#remove NAs and only remove TRUE/FALSE
+survey_data_hobby <- survey_data %>%
+  filter(!is.na(coding_activities)) %>%  # Remove NAs first
+  mutate(hobby = str_detect(coding_activities, "Hobby")) %>%
+  dplyr::select(coding_activities, hobby)
+
+class(survey_data_hobby$hobby) # now logical
+```
+
+What happens if we make something that isn't logical, logical?
+
+```{r num to logical}
+class(survey_data$converted_comp_yearly) #numeric
+
+survey_data_comp_logical <- survey_data %>%
+  select(converted_comp_yearly) %>%
+  mutate(comp_logical = as.logical(converted_comp_yearly))
+
+survey_data_comp_logical #anything not 0 counts as True
+```
+
+### Factors
+
+Character - Stores text strings, sorts alphabetically, easier text manipulation
+Factor - Stores cateogoriess as integers internally with predefined levels, better for modelling and for plotting with specific order
+
+```{r factors}
+class(survey_data$age) #character
+unique(survey_data$age) 
+
+# convert age to factor
+survey_data_age <- survey_data %>%
+  dplyr::select(age) %>%
+  mutate(age_factor = factor(age)) %>%
+  count(age_factor)
+
+#check class and levels
+class(survey_data_age$age_factor)
+levels(survey_data_age$age_factor)
+
+#order levels
+survey_data_age <- survey_data %>%
+  dplyr::select(age) %>%
+  mutate(age_factor = factor(age, levels=c("Under 18 years old",
+                                           "18-24 years old",
+                                           "25-34 years old",
+                                           "35-44 years old",
+                                           "45-54 years old",
+                                           "55-64 years old",
+                                           "65 years or older",
+                                           "Prefer not to say"))) %>%
+  count(age_factor)
+
+#check again
+class(survey_data_age$age_factor)
+levels(survey_data_age$age_factor)
+```
+
+What happens if we make something not a factor, a factor?
+
+```{r num to factor}
+class(survey_data$converted_comp_yearly) #numeric
+unique(survey_data$converted_comp_yearly) 
+levels(survey_data$converted_comp_yearly) #NULL because not factor
+
+# Try to convert compensation to factor (probably not meaningful)
+survey_data_comp_yearly <- survey_data %>%
+  dplyr::select(converted_comp_yearly) %>%
+  mutate(comp_factor = factor(converted_comp_yearly))
+
+class(survey_data_comp_yearly$comp_factor)
+levels(survey_data_comp_yearly$comp_factor) 
+```
+
+What is a string and how to check?
+
+```{r string}
+#take code_activities as an example
+unique(survey_data$coding_activities)
+
+# Check type of a single value
+typeof(survey_data$coding_activities[1])  # "character"
+class(survey_data$coding_activities[1])   # "character"
+
+# Useful string operations with stringr
+survey_data %>%
+  filter(!is.na(coding_activities)) %>%
+  transmute(
+    original = coding_activities,
+    length = str_length(coding_activities),
+    uppercase = str_to_upper(coding_activities),
+    n_activities = str_count(coding_activities, ";") + 1,
+    first_activity = str_extract(coding_activities, "^[^;]+")) %>%
+  view()
+
+# # String manipulation examples
+# survey_data %>%
+#   filter(!is.na(coding_activities)) %>%
+#   mutate(
+#     # Split into list
+#     activities_list = str_split(coding_activities, ";"),
+#     # Count occurrences
+#     n_semicolons = str_count(coding_activities, ";"),
+#     # Extract patterns
+#     first_word = str_extract(coding_activities, "\\w+"),
+#     # Replace text
+#     replaced = str_replace(coding_activities, "Hobby", "HOBBY"),
+#     # Convert case
+#     upper = str_to_upper(coding_activities),
+#     lower = str_to_lower(coding_activities)
+#   )
+```
+
+### DateTime
+
+```{r ymd}
+# Create a date from string
+date_str <- "2020-01-01"
+class(date_str) #character
+
+# convert to dates in year-month-day using lubridate
+date_time <- lubridate::ymd(date_str) 
+
+class(date_time)  # date
+typeof(date_time) #dbl
+
+# Different ways to create dates
+dates_example <- tibble(
+  date_str = "2020-01-01",
+  date_ymd = ymd(date_str),
+  date_mdy = mdy("01-01-2020"),
+  date_dmy = dmy("01-01-2020"),
+  datetime = ymd_hms("2020-01-01 12:30:45"))
+
+# Try to convert non-date data (like the compensation example)
+# works but everything counted as milliseconds/seconds since 1970-01-01
+survey_data %>%
+  dplyr::select(converted_comp_yearly) %>%
+  mutate(comp_as_date = as_datetime(converted_comp_yearly))
+```
+
+## Outliers
+
+Identify outliers by plotting!
+
+```{r histogram}
+# look at the distribution
+# Extremely high values obviously skewing
+survey_data %>%
+  filter(!is.na(comp_total)) %>% # 46.2% missing as NA so will get an error, lets remove
+  ggplot(aes(x = comp_total)) +
+  geom_histogram(bins=30) +
+  labs(title = "Distribution of Compensation")
+
+# Look at distribution with limit
+survey_data %>%
+  filter(!is.na(comp_total)) %>%
+  ggplot(aes(x = comp_total)) +
+  geom_histogram() +
+  xlim(0, 1000000) +
+  labs(title = "Distribution of Compensation (Limited Range)")
+
+# Find high values
+survey_data %>%
+  filter(!is.na(comp_total)) %>%
+  count(high_salary = comp_total > 1000000) %>%
+  mutate(pct = n/sum(n) * 100)
+
+# Create dataset without outliers
+survey_data_filtered <- survey_data %>%
+  filter(comp_total < 10000000) #removes 4521
+```
+
+```{r scatterplot}
+# Scatter plot with work experience and outliers
+ggplot(survey_data, aes(x = work_exp, y = comp_total)) +
+  geom_point() +
+  labs(title = "Compensation vs Work Experience (With Outliers)")
+
+# Now without outliers
+ggplot(survey_data_filtered, aes(x = work_exp, y = comp_total)) +
+  geom_point() +
+  labs(title = "Compensation vs Work Experience (Without Outliers)")
+
+# Replace outliers with mean
+survey_data_replaced <- survey_data %>%
+  mutate(comp_replaced = case_when(comp_total > 10000000 ~ mean(comp_total, na.rm = TRUE),
+                                   TRUE ~ comp_total))
+
+# Replace outliers with mean and create plot
+survey_data %>%
+  mutate(comp_replaced = case_when(
+    converted_comp_yearly > 10000000 ~ mean(converted_comp_yearly, na.rm = TRUE),
+    TRUE ~ converted_comp_yearly
+  )) %>%
+  ggplot(aes(x = work_exp, y = comp_replaced)) +
+  geom_point(alpha = 0.5) +  # alpha for transparency
+  labs(
+    title = "Compensation vs Work Experience",
+    subtitle = "Outliers replaced with mean",
+    x = "Years of Work Experience",
+    y = "Yearly Compensation"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+# Compare statistics before and after replacement
+summary(survey_data$converted_comp_yearly) # Original
+summary(survey_data_replaced$comp_replaced) # After replacement
+
+# Or if you want to compare both side by side
+survey_data_replaced %>%
+  select(converted_comp_yearly, comp_replaced) %>%
+  summary()
+```
+
+### Basic export
+
+```{r}
+write_csv(survey_data_replaced, here("data", "survey_data_cleaned.csv"))
+```
+
+### Exercise 4
+
+1. Check for outliers
+2. Decide how to deal with them
+3. Fix outliers
+4. Save your data
