@@ -59,6 +59,56 @@ nrow(survey_data)
 
 ## Back to slides 
   
+## Plotting Data
+
+`ggplot2` is part of the `tidyverse` and it is a package that is dedicated to data visualization.
+
+Resources:
+
+-   <https://ggplot2.tidyverse.org/articles/ggplot2.html>
+-   <https://r-graph-gallery.com/ggplot2-package.html>
+-   <https://exts.ggplot2.tidyverse.org/gallery/>
+
+```{r}
+?ggplot
+```
+
+
+```{r plot WorkExp}
+# Start with basic histogram
+survey_data %>% 
+    ggplot(data=survey_data, aes(x=work_exp)) + 
+    geom_histogram()
+
+survey_data %>%
+    ggplot(data=survey_data, aes(x=age, y=work_exp)) + 
+    geom_point()
+
+
+ggplot(survey_data, aes(x = work_exp)) +
+  geom_histogram(bins = 30, na.rm = TRUE)
+
+# # Add colors and labels
+# ggplot(survey_data, aes(x = WorkExp)) +
+#   geom_histogram(bins = 30, 
+#                 na.rm = TRUE,
+#                 fill = "steelblue",
+#                 color = "white") +
+#   labs(title = "Distribution of Work Experience",
+#        subtitle = "Stack Overflow Developer Survey 2023",
+#        x = "Years of Work Experience",
+#        y = "Count")
+```
+
+## Exercise 
+
+Make a plot!
+Use colnames to choose variables
+What does this plot mean?
+
+Put answers in google doc
+
+
 ## Select data
 
 `dplyr` is part of the larger `tidyverse`, it provides convenient tools for the most common data manipulation tasks e.g., selecting rows/columns and filtering.
@@ -127,6 +177,15 @@ survey_data %>%
 ```
 
 
+## Exercise 
+Select the data on your birthday! 
+Months are columns
+Days are rows
+
+Put answer + code in google doc
+
+
+
 ## Filtering Data
 
 Different ways to identify and count specific values/categories
@@ -155,42 +214,15 @@ survey_data %>%
   filter(comp_total > 500000 & country == "Australia")
 ```
 
-## Plotting Data
-
-`ggplot2` is part of the `tidyverse` and it is a package that is dedicated to data visualization.
-
-Resources:
-
--   <https://ggplot2.tidyverse.org/articles/ggplot2.html>
--   <https://r-graph-gallery.com/ggplot2-package.html>
--   <https://exts.ggplot2.tidyverse.org/gallery/>
-
+## Set data into the original df 
 ```{r}
-?ggplot
+survey_data$age <- 10
+
+survey_data %>%
+  mutate(age=ifelse(age>30, 'millenial', 'genz'))
 ```
 
 
-```{r plot WorkExp}
-# Start with basic histogram
-ggplot(survey_data, aes(x = work_exp)) +
-  geom_histogram(bins = 30, na.rm = TRUE)
-
-# # Add colors and labels
-# ggplot(survey_data, aes(x = WorkExp)) +
-#   geom_histogram(bins = 30, 
-#                 na.rm = TRUE,
-#                 fill = "steelblue",
-#                 color = "white") +
-#   labs(title = "Distribution of Work Experience",
-#        subtitle = "Stack Overflow Developer Survey 2023",
-#        x = "Years of Work Experience",
-#        y = "Count")
-```
-
-### Exercise 2
-
-1.  Plot your own data
-2.  Choose single column to plot
 
 # Lunch Break 
 
