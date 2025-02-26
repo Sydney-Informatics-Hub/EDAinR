@@ -222,6 +222,14 @@ survey_data %>%
   mutate(age=ifelse(age>30, 'millenial', 'genz'))
 ```
 
+## Exercise 
+
+Change everyone older to you to “old”
+filter the data so you only see 
+younger than you
+older than you
+
+
 
 
 # Lunch Break 
@@ -238,7 +246,24 @@ Resource: https://cran.r-project.org/web/packages/tidyr/vignettes/pivot.html
 
 https://tidyr.tidyverse.org/reference/pivot_longer.html 
 
+```{r}
+library(tidyr)
+data <- as_tibble(billboard)
+```
+
+
+```{r}
+data_long <- data %>%
+  pivot_longer(cols=starts_with('wk'), names_to='week', values_to='rank')
+
+data_wide <- data_long %>%
+  pivot_wider(names_from='week', values_from='rank')
+```
+
+
 ```{r pivot longer}
+
+
 # making data longer by converting columns to rows
 survey_data_long <- survey_data %>%
   pivot_longer(cols = -response_id, # keep ResponseId as identifier
@@ -267,9 +292,22 @@ survey_data_wide <- survey_data %>%
 dim(survey_data_wide)
 ```
 
-### Exercise 3
+## Exercise do the same with the pew dataset
 
-1.  Convert your own data into a tidier format.
+Use relig_income data
+Reformat to tidy data
+
+can use -religion for cols to save typing all out 
+
+
+```{r}
+data <- as_tibble(relig_income)
+```
+
+```{r}
+head(data)
+```
+
 
 
 ## Missing Data
