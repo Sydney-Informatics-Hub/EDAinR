@@ -13,6 +13,7 @@ library(here)
 library(lubridate)
 library(skimr)
 library(tidyverse)
+library(janitor)
 
 # Set global theme for plots
 theme_set(theme_minimal())
@@ -56,10 +57,8 @@ colnames(survey_data)
 nrow(survey_data)
 ```
 
-### Exercise 1
-
-1.  Read your data into R and view it
-
+## Back to slides 
+  
 ## Select data
 
 `dplyr` is part of the larger `tidyverse`, it provides convenient tools for the most common data manipulation tasks e.g., selecting rows/columns and filtering.
@@ -118,6 +117,16 @@ survey_data %>%
   dplyr:: select(RemoteWork)
 ```
 
+```{r}
+survey_data[10,]
+
+survey_data %>%
+  slice(10) %>%
+  select(10)
+
+```
+
+
 ## Filtering Data
 
 Different ways to identify and count specific values/categories
@@ -155,6 +164,11 @@ Resources:
 -   <https://ggplot2.tidyverse.org/articles/ggplot2.html>
 -   <https://r-graph-gallery.com/ggplot2-package.html>
 -   <https://exts.ggplot2.tidyverse.org/gallery/>
+
+```{r}
+?ggplot
+```
+
 
 ```{r plot WorkExp}
 # Start with basic histogram

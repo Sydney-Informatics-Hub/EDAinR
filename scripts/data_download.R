@@ -6,4 +6,4 @@ if (!file.exists(destfile)){
   download.file(url, destfile)
 }
 
-unzip(destfile, exdir='data')
+unzip(destfile, exdir='data');
